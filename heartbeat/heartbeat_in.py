@@ -34,3 +34,5 @@ def listen_heartbeat():
             logging.error('Heartbeat not received')
         except KeyboardInterrupt:
             break
+
+listen_heartbeat()
