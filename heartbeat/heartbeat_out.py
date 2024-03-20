@@ -56,13 +56,13 @@ def emit_heartbeat():
             message = HeartbeatProtocol.write(timestamp, db_server_host, status)
 
             if status == 'DEAD':
-                logging.critical(f'[{timestamp}] { db_server_host } is DEAD')
+                logging.critical(f'[{timestamp}]\t{ db_server_host } is DEAD')
 
             # Notify subscribers
             for subscriber in subscribers:
                 subscriber: Subscriber
                 subscriber.notify(message)
-                logging.info(f'[{str(timestamp).zfill(20)}] {subscriber.dest_host} is notified.')
+                logging.info(f'[{str(timestamp).zfill(20)}]\t{subscriber.dest_host}:{subscriber.dest_port} is notified.')
 
             
             time.sleep(heartbeat_delay)
