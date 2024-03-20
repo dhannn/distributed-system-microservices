@@ -8,7 +8,7 @@ from protocol import HeartbeatProtocol
 
 def emit_heartbeat():
     logging.basicConfig(level=logging.INFO)
-    heartbeat_delay = os.environ['HEARTBEAT_DELAY']
+    heartbeat_delay = float(os.environ['HEARTBEAT_DELAY'])
 
     db_server_host = os.environ['DB_SERVER_HOST']
     db_server_port = int(os.environ['DB_SERVER_PORT'])

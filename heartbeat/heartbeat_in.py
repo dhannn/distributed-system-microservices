@@ -16,7 +16,7 @@ def listen_heartbeat():
     endpoint = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     endpoint.bind((server_host_in, server_port_in))
 
-    heartbeat_delay = os.environ['HEARTBEAT_DELAY']
+    heartbeat_delay = float(os.environ['HEARTBEAT_DELAY'])
     TIMEOUT = heartbeat_delay * 2
 
     # Listen to publishers
