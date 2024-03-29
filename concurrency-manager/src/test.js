@@ -48,6 +48,29 @@ test('test__concurrencyControl_Fail', () => {
     })
 })
 
+test('test__concurrencyControl_MultipleSuccess', () => {
+    const x = new ConcurrentTransaction();
+
+    ConcurrentTransaction.db_connection = mysql.createConnection()
+    
+    x.watchRecord(0);
+    x.watchRecord(1);
+
+    x.end()
+        .then((value) => expect(value).toBe(true));
+    
+    expect(x.read_timestamps[0].version).toBe(0)
+    expect(x.read_timestamps[1].version).toBe(1)
+
+    x.queryVersion(0, (_, res) => {
+        expect(res).toBe(0);
+    });
+
+    x.queryVersion(1, (_, res) => {
+        expect(res).toBe(1);
+    });
+})
+
 test('test__concurrencyControl_MultipleFail', () => {
     const x = new ConcurrentTransaction();
 
