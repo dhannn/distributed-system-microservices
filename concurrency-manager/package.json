@@ -1,0 +1,19 @@
+{
+  "name": "concurrency-manager",
+  "version": "1.0.0",
+  "description": "A simple service to manage concurrency in a distributed system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node src/index.js --debug",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

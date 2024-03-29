@@ -2,3 +2,6 @@
 **/**/__pycache__
 **/**/.env
 **/**/test_*.py
+
+*/**/node_modules
+*/**/coverage/
