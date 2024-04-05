@@ -27,7 +27,7 @@ class Transactions:
 
         if status == 'COMMIT':
 
-            operations = transactions[lsn]
+            operations = self.transactions[lsn]
             query = ''            
             
             for operation in operations:
