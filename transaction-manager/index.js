@@ -68,8 +68,21 @@ class TransactionManager {
         });
     }
 
-    generateReports() {
-        
+    generateReport() {
+        return new Promise((resolve, reject) => {
+            
+            const db_connection = TransactionManager.db_connection;
+            const beginGenerateReport = (err) => {
+
+                const sql = 'SELECT status, COUNT(status) as Total FROM Appointments GROUP BY status WITH ROLLUP;';
+                db_connection.query(sql, (err, res) => {
+                    resolve(res);
+                })
+
+            }
+
+            db_connection.beginTransaction({}, beginGenerateReport);
+        });
     }
 
     addAppointment(region) {
@@ -130,32 +143,30 @@ class TransactionManager {
 
             logger.addOperation(lsn, 'MODIFY', id, `Status '${status}'`);
             concurrency.watchRecord(id);
-            setTimeout(() => {
             
-                const sql = `UPDATE appointments SET status = '${status}' WHERE id = ${id};`;
-                db_connection.query(sql, (err, _) => {
-                    if (err) {
-                        logger.end(lsn, 'ABORT');
-    
-                        return db_connection.rollback((err) => {
-                            throw err;
-                        });
-                    }
-                });
-                
-                concurrency.end()
-                    .then((res) => {
-                        if (res) {
-                            db_connection.commit();
-                            logger.end(lsn, 'COMMIT')
-                        } else {
-                            db_connection.rollback();
-                            this.modifyStatus(id, status);
-                        }
-                    }).catch((err) => {
-                        logger.end(lsn, 'ABORT');
+            const sql = `UPDATE appointments SET status = '${status}' WHERE id = ${id};`;
+            db_connection.query(sql, (err, _) => {
+                if (err) {
+                    logger.end(lsn, 'ABORT');
+
+                    return db_connection.rollback((err) => {
+                        throw err;
                     });
-            }, 0);
+                }
+            });
+            
+            concurrency.end()
+                .then((res) => {
+                    if (res) {
+                        db_connection.commit();
+                        logger.end(lsn, 'COMMIT')
+                    } else {
+                        db_connection.rollback();
+                        this.modifyStatus(id, status);
+                    }
+                }).catch((err) => {
+                    logger.end(lsn, 'ABORT');
+                });
 
         });
         
@@ -255,7 +266,9 @@ const x = new TransactionManager()
 //         console.log(error);
 //     }
 // }
-x.viewAppointment(1000)
+
+x.modifyStatus(2423, 'Complete')
+x.generateReport()
     .then((res) => {
         console.log(res);
     })
