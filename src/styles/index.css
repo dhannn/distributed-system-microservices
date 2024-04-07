@@ -1,0 +1,179 @@
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* Search bar container */
+.search {
+  margin-top: 15%;
+  display: flex;
+  line-height: 28px;
+  align-items: center;
+  position: relative;
+  width: 30%;
+}
+
+/* Search bar text field */
+.search-field {
+  width: 100%;
+  height: 40px;
+  line-height: 28px;
+  padding: 0 1rem;
+  padding-left: 2.5rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  background-color: #f3f3f4;
+  color: #0d0c22;
+  transition: 0.3s ease;
+}
+
+.search-field::placeholder {
+  color: #9e9ea7;
+}
+
+.search-field:focus,
+input:hover {
+  outline: none;
+  border-color: rgba(76, 139, 234, 0.4);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(76, 139, 234, 0.4);
+}
+
+/* Search bar text field icon */
+.icon {
+  position: absolute;
+  left: 1rem;
+  fill: #9e9ea7;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+/* Functions container */
+.functions {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* Book appointment container */
+.book-appt {
+    display: flex;
+    flex-direction: row;
+}
+
+.book-appt > * {
+    margin: 15px 10px 10px 15px;
+}
+
+/* Create report container */
+.create-report {
+}
+
+/* Book appointment dropdown container */
+.book-appt-dropdown {
+  position: relative;
+  display: block;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.book-appt-dropdown:hover button {
+  border-radius: 15px 15px 0px 0px;
+}
+
+/* Book appointment dropdown button */
+.book-appt-dropdown-btn {
+  background-color: #4ca3af;
+  color: #fff;
+  padding: 10px 15px;
+  font-size: 13px;
+  font-weight: bold;
+  border: 2px solid transparent;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+/* Book appointment dropdown content */
+.book-appt-dropdown-content {
+  display: none;
+  font-size: 13px;
+  position: absolute;
+  z-index: 1;
+  min-width: 200px;
+  background-color: #f3f3f4;
+  border: 2px solid #4ca3af;
+  border-radius: 0px 15px 15px 15px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Book appointment dropdown options */
+.book-appt-dropdown-content a {
+  color: #4ca3af;
+  padding: 8px 10px;
+  text-decoration: none;
+  display: block;
+  transition: 0.1s;
+}
+
+.book-appt-dropdown-content a:hover {
+  background-color: #4ca3af;
+  color: #e7e7e7;
+}
+
+.book-appt-dropdown-content a:focus {
+  background-color: #e7e7e7;
+  color: #4ca3af;
+}
+
+.book-appt-dropdown-content #luzon:hover {
+  border-radius: 0px 13px 0px 0px;
+}
+
+.book-appt-dropdown-content #mindanao:hover {
+  border-radius: 0px 0px 13px 13px;
+}
+
+.book-appt-dropdown:hover button {
+  border-radius: 15px 15px 0px 0px;
+}
+
+.book-appt-dropdown:hover .book-appt-dropdown-content {
+  display: block;
+}
+
+/* Function buttons */
+.book-appt-btn,
+.create-report-btn {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  outline-offset: 4px;
+}
+
+/* Function button texts */
+.book-appt-btn-txt,
+.create-report-btn-txt {
+  display: block;
+  position: relative;
+  padding: 12px 27px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  color: white;
+  background: hsl(345deg 100% 47%);
+}
+
+/* Book appointment text */
+.book-appt-btn-txt {
+  background: hsla(123, 97%, 23%, 0.925);
+}
+
+/* Create report text */
+.create-report-btn-txt {
+  background: hsl(231, 88%, 47%);
+}
