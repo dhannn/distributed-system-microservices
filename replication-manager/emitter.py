@@ -8,7 +8,7 @@ def file_checksum(filename):
         readable_hash = hashlib.md5(bytes).hexdigest()
     return readable_hash
 
-def emitter(nodes, filename_to_monitor):
+def emitter(nodes, filename_to_monitor, max_iterations=None):
     # create sockets for each node
     sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
 
@@ -22,9 +22,14 @@ def emitter(nodes, filename_to_monitor):
     last_known_hash = file_checksum(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
-    while True:
+    iteration = 0
+    while max_iterations is None or iteration < max_iterations:
+        print(f"Monitoring {filename_to_monitor} for changes...")
+        print(f"Last known hash: {last_known_hash}")
         current_hash = file_checksum(filename_to_monitor)
+        print(f"Current hash: {current_hash}")
         if current_hash != last_known_hash:
+            print(f"Detected change...")
             last_known_hash = current_hash
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
@@ -46,10 +51,11 @@ def emitter(nodes, filename_to_monitor):
                 backoff_time *= 2
 
             if response.startswith('ACK'):
-                print(f"Replication of {filename_to_monitor} successful")
+                print(f"Replication of {filename_to_monitor} successful\n")
             elif response.startswith('NACK'):
                 print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
             else:
                 print("Unknown response:", response)
                         
         time.sleep(1)
+        iteration += 1
