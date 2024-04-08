@@ -3,8 +3,6 @@ import os
 import mysql.connector
 
 class HealthUpdater:
-    db_connection = mysql.connector.MySQLConnection
-
     def __init__(self):
         try:
             self.db_connection = mysql.connector.connect(
@@ -16,6 +14,7 @@ class HealthUpdater:
             )
         except Exception as e:
             print(e)
+            self.db_connection = None
     
     def execute_query(self, node, status):
         is_success = True
@@ -27,6 +26,7 @@ class HealthUpdater:
             self.db_connection.commit()
         except:
             is_success = False
-            self.db_connection.rollback()
+            if self.db_connection:
+                self.db_connection.rollback()
 
         return is_success
