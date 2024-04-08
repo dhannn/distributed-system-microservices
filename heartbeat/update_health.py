@@ -1,5 +1,4 @@
 import os
-
 import mysql.connector
 
 class HealthUpdater:
@@ -18,7 +17,7 @@ class HealthUpdater:
     
     def execute_query(self, node, status):
         is_success = True
-        query = f"UPDATE SystemHealth SET node_status = '{status}' WHERE node_number = '{node}'"
+        query = f"UPDATE SystemHealth SET node_state = '{status}' WHERE node_server = '{node}'"
 
         try:
             cursor = self.db_connection.cursor()
