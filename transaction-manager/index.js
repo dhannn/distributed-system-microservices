@@ -8,166 +8,216 @@ class TransactionManager {
     static concurrencyManager = new ConcurrencyManager();
     static db_connection = TransactionManager.initializeDbConnection();
 
-    convertOperationToQuery(operation, id, args) {
-        switch (operation) {
+    static convertOperationToQuery(operation, id, args) {
+        const operations = {
+            'VIEW': `SELECT * FROM Appointments WHERE ID = ${id};`,
+            'INSERT': `INSERT INTO Appointments (region) VALUES ('${args[0]}');`,
+            'MODIFY': `UPDATE Appointments SET ${args[0]} = ${args[1]} WHERE id = ${id}`,
+            'DELETE': `DELETE FROM Appointments WHERE id = ${id}`
+        };
 
-            case 'VIEW':
-                return `SELECT * FROM Appointments WHERE ID = ${id};`;
-
-            case 'INSERT':
-                return `INSERT INTO Appointments (region) VALUES ('${args[0]}');`;
-                
-            case 'MODIFY':
-                return `UPDATE Appointments SET ${args[0]} = ${args[1]} WHERE id = ${id}`;
-                
-            case 'DELETE':
-                return `DELETE FROM Appointments WHERE id = ${id}`;
-        
-            default:
-                throw 'Unsupported Operation';
+        if (operations[operation]) {
+            return operations[operation];
+        } else {
+            throw new Error('Unsupported Operation');
         }
     }
 
-    setIsolationLevel(db_connection, isolationLevel) {
-        const sql = `SET SESSION TRANSACTION ISOLATION LEVEL ${isolationLevel}`;
+    static setIsolationLevel(db_connection, isolationLevel) {
+        return new Promise((resolve, reject) => {
+            const sql = `SET SESSION TRANSACTION ISOLATION LEVEL ${isolationLevel}`;
 
-        db_connection.query(sql, (err) => {
-            if (err) {
-                throw err;
-            }
+            db_connection.query(sql, (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
         });
     }
 
-    viewAppointment(id) {
-
+    static executeQuery(db_connection, sql) {
         return new Promise((resolve, reject) => {
-            
-            const db_connection = TransactionManager.db_connection;
-            
-            const beginViewAppointment = (err) => {
+            db_connection.query(sql, (err, res) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            })
+        })
+    }
+
+    async viewAppointment(id) {
+        
+        return new Promise((resolve, reject) => {
+                        
+            const beginViewAppointment = async (err) => {
                 
                 if (err) {
-                    return db_connection.rollback(() => { throw err; });
+                    // TODO: Handle and send the correct error class through reject()
                 }
                 
-                const sql = this.convertOperationToQuery('VIEW', id);
-
-                db_connection.query(sql, (err, res) => {
-                    if (err) {
-                        return db_connection.rollback(() => { throw err;})
-                    }
-
-                    resolve(res[0])
-                })
-
+                const sql = TransactionManager.convertOperationToQuery('VIEW', id, []);
+                const result = await TransactionManager.executeQuery(db_connection, sql);
+    
+                resolve(result[0])
+    
             };
-            
-            this.setIsolationLevel(db_connection, 'READ COMMITTED');
+    
+            const db_connection = TransactionManager.db_connection;
+            TransactionManager.setIsolationLevel(db_connection, 'READ COMMITTED');
             db_connection.beginTransaction({}, beginViewAppointment);
 
         });
+        
     }
 
-    generateReport() {
+    async generateReport() {
+        
         return new Promise((resolve, reject) => {
-            
+
             const db_connection = TransactionManager.db_connection;
-            const beginGenerateReport = (err) => {
-
-                const sql = 'SELECT status, COUNT(status) as Total FROM Appointments GROUP BY status WITH ROLLUP;';
-                db_connection.query(sql, (err, res) => {
-                    resolve(res);
-                })
-
+            const beginGenerateReport = async (err) => {
+                
+                if (err) {
+                    
+                }
+    
+                const sql = 'SELECT         status, COUNT(status) as total ' + 
+                            'FROM           Appointments ' +
+                            'GROUP BY       status WITH ROLLUP;';
+                TransactionManager.executeQuery(db_connection, sql)
+                    .then((res) => resolve(res))
+                    .catch((err) => {
+                        reject(err)
+                    })
             }
-
+    
             db_connection.beginTransaction({}, beginGenerateReport);
         });
+        
     }
 
-    addAppointment(region) {
-        const db_connection = TransactionManager.db_connection;
-        const beginAddTransaction = (err) => {
+    async addAppointment(region) {
 
-            const logger = TransactionManager.logger;
-            
-            this.setIsolationLevel(db_connection, 'READ UNCOMMITTED');
-    
+        return new Promise((resolve, reject) => {
+            const db_connection = TransactionManager.db_connection;
+            const logger = new TransactionLogger();
+
+            TransactionManager.setIsolationLevel(db_connection, 'READ UNCOMMITTED');
+
             const lsn = logger.start();
 
-            if (err) {
-                return db_connection.rollback(() => { throw err });
-            }
-            
-            const sql = this.convertOperationToQuery('INSERT', null, [region]);
-            console.log(sql);
-            
-            db_connection.query(sql, (err, res) => {
+            const beginAddAppointment = async (err) => {
+
                 if (err) {
-                    return db_connection.rollback(() => {
-                        logger.end(lsn, 'ABORT');
-                        throw err;
-                    });
+                    logger.end(lsn, 'ABORT');
+                    db_connection.rollback(() => { throw err; });
                 }
-                console.log(res.insertId);
-                
-                db_connection.query('SELECT * FROM Appointments WHERE id = ?', [res.insertId], (err, res) => {
-                    logger.addOperation(lsn, 'INSERT', res[0].id, `'${res[0].time_queued.toISOString().slice(0, 19).replace('T', ' ')}' '${res[0].region}' '${res[0].status}' ${res[0].version}`);
-                    console.log(res);
-                    
-                    db_connection.commit();
-                    logger.end(lsn, 'COMMIT');
-                });
 
-            });
-        }
+                try {
+    
+                    const sql = TransactionManager.convertOperationToQuery('INSERT', null, ['status', region]);
+                    const res = await TransactionManager.executeQuery(db_connection, sql);
 
-        db_connection.beginTransaction({}, beginAddTransaction);
+                    const sql2 = TransactionManager.convertOperationToQuery('VIEW', res.insertId, []);
+                    const info = await TransactionManager.executeQuery(db_connection, sql2);
+
+                    db_connection.commit(async (err) => {
+
+                        const args = `'${convertJSDateToMySQL(info[0].time_queued)}' '${info[0].region}' '${info[0].status}' ${info[0].version}`;
+
+                        logger.addOperation(lsn, 'INSERT', info[0].id, args)
+                            .then(() => {
+                                logger.end(lsn, 'COMMIT');
+                            });
+
+                    });
+
+                    resolve(info);
+
+                } catch (error) {
+
+                    logger.end(lsn, 'ABORT');
+                    db_connection.rollback(() => { throw error })
+                    reject(error);
+
+                }
+
+            }
+
+            db_connection.beginTransaction({}, beginAddAppointment);
+
+        });
+        
     }
 
-    modifyStatus(id, status) {
-
-        const db_connection = TransactionManager.db_connection;
-        const logger = TransactionManager.logger;
-        const concurrency = TransactionManager.concurrencyManager;
+    async modifyStatus(id, status) {
         
-        this.setIsolationLevel(db_connection, 'READ COMMITTED');
-        
-        const lsn = logger.start();
-        db_connection.beginTransaction((err) => {
-            if (err) {
-                return db_connection.rollback((err) => {
-                    throw err;
-                });
-            }
+        return new Promise((resolve, reject) => {
 
-            logger.addOperation(lsn, 'MODIFY', id, `Status '${status}'`);
-            concurrency.watchRecord(id);
+            const db_connection = TransactionManager.db_connection;
+            const logger = new TransactionLogger();
+            const concurrency = new ConcurrencyManager();
             
-            const sql = `UPDATE appointments SET status = '${status}' WHERE id = ${id};`;
-            db_connection.query(sql, (err, _) => {
+            TransactionManager.setIsolationLevel(db_connection, 'READ COMMITTED');
+            
+            const lsn = logger.start();
+        
+            const beginModifyStatus = async (err) => {
+
                 if (err) {
-                    logger.end(lsn, 'ABORT');
-
-                    return db_connection.rollback((err) => {
-                        throw err;
-                    });
+                    db_connection.rollback();
+                    reject(err);
                 }
-            });
-            
-            concurrency.end()
-                .then((res) => {
-                    if (res) {
-                        db_connection.commit();
-                        logger.end(lsn, 'COMMIT')
-                    } else {
-                        db_connection.rollback();
-                        this.modifyStatus(id, status);
-                    }
-                }).catch((err) => {
-                    logger.end(lsn, 'ABORT');
-                });
+                concurrency.watchRecord(id);
 
+                try {
+                    
+                    const sql = TransactionManager.convertOperationToQuery('MODIFY', id, [ 'status', status ]);
+                    console.log('SQL: ' + sql);
+                    await TransactionManager.executeQuery(db_connection, sql);
+
+                } catch(error) {
+                    // TODO: Implement error handling
+                    console.log(error);
+                }
+
+                try {
+                    
+                    const res = await concurrency.end();
+
+                    if (res) {
+                        
+                            
+                        logger.addOperation(lsn, 'MODIFY', id, 'status', status)
+                            .then(() => {
+                                logger.end(lsn, 'COMMIT');
+                            });
+
+                        db_connection.commit(async (err) => {                            
+    
+                            const sql = TransactionManager.convertOperationToQuery('VIEW', id, []);
+                            const newRecord = await TransactionManager.executeQuery(db_connection, sql);
+    
+                            resolve(newRecord);
+
+                        });
+
+                    } else {
+                        reject(/** TOOD: Add proper interface */);
+                    }
+
+                } catch (error) {
+                    // TODO: Implement error handling
+                }
+
+
+            };
+            
+            db_connection.beginTransaction({}, beginModifyStatus);
         });
         
     }
@@ -189,86 +239,8 @@ class TransactionManager {
         return conn;
     }
 
-    startOperation(db_connection, concurrency, logger, operations) {
-
-        var { sqls, lsn } = this.prepareTransaction(logger, operations, concurrency);
-
-        db_connection.beginTransaction((err) => {
-
-            if (err) {
-                return db_connection.rollback((err) => {
-                    throw err;
-                });
-            }
-
-            for (const s in sqls) {
-                const sql = sqls[s];
-                db_connection.query(sql, (err, _) => {
-                    if (err) {
-                        logger.end(lsn, 'ABORT');
-    
-                        return db_connection.rollback((err) => {
-                            throw err;
-                        });
-                    }
-                });
-            }
-                
-            this.endTransaction(concurrency, db_connection, logger, lsn, operations);
-        });
-     }
-
-    endTransaction(concurrency, db_connection, logger, lsn, operations)
-    {
-        concurrency.end()
-            .then((res) =>
-            {
-                if (res)
-                {
-                    db_connection.commit();
-                    logger.end(lsn, 'COMMIT');
-                } else
-                {
-                    db_connection.rollback();
-                    this.startOperation(db_connection, concurrency, logger, operations);
-                }
-            }).catch((err) =>
-            {
-                logger.end(lsn, 'ABORT');
-            });
-    }
-
-    prepareTransaction(logger, operations, concurrency) {
-        const lsn = logger.start();
-
-        let sqls = [];
-
-        for (const o in operations) {
-            const operation = operations[o];
-            const args = operation.join(' ');
-
-            logger.addOperation(lsn, operation.operation, operation.id, args);
-            concurrency.watchRecord(operation.id);
-            sqls.push(this.convertOperationToQuery(
-                operation.operation, operation.id, operation.args));
-        }
-        return { sqls, lsn };
-    }
-
 }
 
-const x = new TransactionManager()
-// const regions = ['Luzon', 'Visayas', 'Mindanao'];
-// for (let i = 0; i < 10000; i++) {
-//     try {
-//         x.addAppointment(regions[i % 3]);
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
-
-x.modifyStatus(2423, 'Complete')
-x.generateReport()
-    .then((res) => {
-        console.log(res);
-    })
+function convertJSDateToMySQL(date) {
+    return date.toISOString().slice(0, 19).replace('T', ' ');
+}
