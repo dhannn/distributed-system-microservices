@@ -59,3 +59,5 @@ def emitter(nodes, filename_to_monitor, max_iterations=None):
                         
         time.sleep(1)
         iteration += 1
+
+emitter()
