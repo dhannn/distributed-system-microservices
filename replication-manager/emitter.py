@@ -16,7 +16,7 @@ def emitter(max_iterations=None):
     port2 = os.environ['SERVER_HOST_OUT'].split(';')[1].replace('.', '')
     filename_to_monitor = os.environ['TRANSACTION_LOG']
 
-    nodes = [(host1, port1), (host2, port2)]
+    nodes = [(host1, int(port1)), (host2, int(port2))]
     # create sockets for each node
     sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
 
