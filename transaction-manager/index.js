@@ -1,6 +1,8 @@
 const mysql = require('mysql');
 const ConcurrencyManager = require('../concurrency-manager/src/index');
 const TransactionLogger = require('../transaction-logger/index');
+const { parseArgs } = require('./utils');
+const DBError = require('./error');
 
 class TransactionManager { 
     
@@ -10,8 +12,8 @@ class TransactionManager {
 
     static convertOperationToQuery(operation, id, args) {
         const operations = {
-            'VIEW': `SELECT * FROM Appointments WHERE ID = ${id};`,
-            'INSERT': `INSERT INTO Appointments (region) VALUES ('${args[0]}');`,
+            'VIEW': `SELECT * FROM Appointments WHERE ID = ${id}`,
+            'INSERT': `INSERT INTO Appointments (region) VALUES ('${args[0]}')`,
             'MODIFY': `UPDATE Appointments SET ${args[0]} = ${args[1]} WHERE id = ${id}`,
             'DELETE': `DELETE FROM Appointments WHERE id = ${id}`
         };
@@ -40,11 +42,17 @@ class TransactionManager {
     static executeQuery(db_connection, sql) {
         return new Promise((resolve, reject) => {
             db_connection.query(sql, (err, res) => {
+                
                 if (err) {
-                    reject(err);
+                    if (err.code === 'ECONNRESET') {
+                        return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
+                    }
+
+                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
                 } else {
                     resolve(res);
                 }
+
             })
         })
     }
@@ -56,13 +64,26 @@ class TransactionManager {
             const beginViewAppointment = async (err) => {
                 
                 if (err) {
-                    // TODO: Handle and send the correct error class through reject()
+                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR, err));
                 }
                 
-                const sql = TransactionManager.convertOperationToQuery('VIEW', id, []);
-                const result = await TransactionManager.executeQuery(db_connection, sql);
-    
-                resolve(result[0])
+                const sql = TransactionManager.convertOperationToQuery(
+                    'VIEW', id, []);
+
+                try {
+
+                    const result = await TransactionManager.executeQuery(
+                        db_connection, sql);
+
+                    if (result.length === 0) {
+                        return reject(new DBError.RECORD_NOT_FOUND);
+                    }
+        
+                    resolve(result[0])
+                    
+                } catch (error) {
+                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
+                }
     
             };
     
@@ -82,9 +103,14 @@ class TransactionManager {
             const beginGenerateReport = async (err) => {
                 
                 if (err) {
-                    
+                    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                        console.log('Unable connect to the database server');
+                        return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
+                    }
+
+                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
                 }
-    
+                
                 const sql = 'SELECT         status, COUNT(status) as total ' + 
                             'FROM           Appointments ' +
                             'GROUP BY       status WITH ROLLUP;';
@@ -93,8 +119,9 @@ class TransactionManager {
                     .catch((err) => {
                         reject(err)
                     })
-            }
-    
+                }
+                
+            TransactionManager.setIsolationLevel(db_connection, 'SERIALIZABLE');
             db_connection.beginTransaction({}, beginGenerateReport);
         });
         
@@ -111,23 +138,28 @@ class TransactionManager {
             const lsn = logger.start();
 
             const beginAddAppointment = async (err) => {
-
+                
                 if (err) {
-                    logger.end(lsn, 'ABORT');
-                    db_connection.rollback(() => { throw err; });
+
+                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
+
                 }
 
                 try {
     
-                    const sql = TransactionManager.convertOperationToQuery('INSERT', null, ['status', region]);
-                    const res = await TransactionManager.executeQuery(db_connection, sql);
-
-                    const sql2 = TransactionManager.convertOperationToQuery('VIEW', res.insertId, []);
-                    const info = await TransactionManager.executeQuery(db_connection, sql2);
+                    const sql = TransactionManager.convertOperationToQuery(
+                        'INSERT', null, ['status', region]);
+                    const res = await TransactionManager.executeQuery(
+                        db_connection, sql);
+                    
+                    const sql2 = TransactionManager.convertOperationToQuery(
+                        'VIEW', res.insertId, []);
+                    const info = await TransactionManager.executeQuery(
+                        db_connection, sql2);
 
                     db_connection.commit(async (err) => {
 
-                        const args = `'${convertJSDateToMySQL(info[0].time_queued)}' '${info[0].region}' '${info[0].status}' ${info[0].version}`;
+                        const args = parseArgs(info[0]);
 
                         logger.addOperation(lsn, 'INSERT', info[0].id, args)
                             .then(() => {
@@ -139,9 +171,31 @@ class TransactionManager {
                     resolve(info);
 
                 } catch (error) {
+                    
+                    if (error) {
+                        if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+                            console.log('Unable connect to the database server');
+                            return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
+                        }
+    
+                        return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
+                    }
 
                     logger.end(lsn, 'ABORT');
-                    db_connection.rollback(() => { throw error })
+                    db_connection.rollback((err) => {
+                
+                        if (err) {
+                            
+                            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                                console.log('Unable connect to the database server');
+                                return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
+                            }
+        
+                            return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
+        
+                        }
+
+                    })
                     reject(error);
 
                 }
@@ -176,44 +230,39 @@ class TransactionManager {
 
                 try {
                     
-                    const sql = TransactionManager.convertOperationToQuery('MODIFY', id, [ 'status', status ]);
-                    console.log('SQL: ' + sql);
-                    await TransactionManager.executeQuery(db_connection, sql);
+                    const sql = TransactionManager.convertOperationToQuery(
+                        'MODIFY', id, [ 'status', status ]);
+                    await TransactionManager.executeQuery(
+                        db_connection, sql);
 
                 } catch(error) {
                     // TODO: Implement error handling
                     console.log(error);
                 }
 
-                try {
-                    
-                    const res = await concurrency.end();
+                const res = await concurrency.end();
 
-                    if (res) {
+                if (res) {
                         
-                            
-                        logger.addOperation(lsn, 'MODIFY', id, 'status', status)
-                            .then(() => {
-                                logger.end(lsn, 'COMMIT');
-                            });
-
-                        db_connection.commit(async (err) => {                            
-    
-                            const sql = TransactionManager.convertOperationToQuery('VIEW', id, []);
-                            const newRecord = await TransactionManager.executeQuery(db_connection, sql);
-    
-                            resolve(newRecord);
-
+                    logger.addOperation(lsn, 'MODIFY', id, 'status', status)
+                        .then(() => {
+                            logger.end(lsn, 'COMMIT');
                         });
 
-                    } else {
-                        reject(/** TOOD: Add proper interface */);
-                    }
+                    db_connection.commit(async (err) => {                            
 
-                } catch (error) {
-                    // TODO: Implement error handling
+                        const sql = TransactionManager.convertOperationToQuery(
+                            'VIEW', id, []);
+                        const newRecord = await TransactionManager.executeQuery(
+                            db_connection, sql);
+
+                        resolve(newRecord);
+
+                    });
+
+                } else {
+                    reject(new DBError(DBError.CONCURRENCY_CONFLICT));
                 }
-
 
             };
             
@@ -232,7 +281,11 @@ class TransactionManager {
         });
         
         conn.connect(err => {
-            if (err) throw err;
+            if (err) {
+                if (err.code === 'ECONNRESET') {
+                    console.log('Waiting for the database server to reset')
+                }
+            }
             console.log('Transaction Manager connected to the database');
         });
 
@@ -241,6 +294,12 @@ class TransactionManager {
 
 }
 
-function convertJSDateToMySQL(date) {
-    return date.toISOString().slice(0, 19).replace('T', ' ');
+module.exports = TransactionManager
+
+const x =  new TransactionManager();
+for (let i = 0; i < 5000; i++) {
+    x.addAppointment('Luzon')
+        .catch((err) => {
+            console.log(err);
+        });
 }
