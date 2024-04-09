@@ -23,6 +23,7 @@ def listener():
     # bind host and port
     try:
         listener_socket.bind((server_host_in, server_port_in))
+        print(f"Listening on {server_host_in}:{server_port_in}")
     except socket.error as e:
         print(str(e))
         print("Error binding to host and port")
@@ -31,6 +32,11 @@ def listener():
     try:
         while True:
             data, addr = listener_socket.recvfrom(1024)
+            data = data.decode('utf-8')
+            print(f"Received data from {addr}: {data}")
+
+            data, addr = listener_socket.recvfrom(1024)
+            data = data.decode('utf-8')
             ret = parser.parse(data)
 
             try:
