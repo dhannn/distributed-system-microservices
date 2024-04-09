@@ -19,18 +19,11 @@ def emitter(max_iterations=None):
     filename_to_monitor = os.environ['TRANSACTION_LOG']
 
     nodes = [(host1, int(port1)), (host2, int(port2))]
+
     # create sockets for each node
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((server_host_in, server_port_in))
-    #sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
-    sockets = []
-    # connect to nodes
-    # for sock, (host, port) in zip(sockets, nodes):
-    #     sock.connect((host, port))
-    client_socket, address = socket.accept()
-    print(f"Accepted connection from {address}")
-    sockets.append(client_socket)
-    current_socket_index = 0
+    sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in nodes]
+    
+    # current_socket_index = 0
 
     #get initial hash
     last_known_hash = file_checksum(filename_to_monitor)
@@ -48,9 +41,8 @@ def emitter(max_iterations=None):
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
 
-            sock = sockets[current_socket_index]
-            sock.sendall(data.encode('utf-8'))
-            current_socket_index = (current_socket_index + 1) % len(sockets)
+            for sock, (host, port) in zip(sockets, nodes):
+                sock.sendto(data.encode('utf-8'), (host, port))
 
             # ACK/NACK part
             response = sock.recv(1024).decode('utf-8')
