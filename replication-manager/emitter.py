@@ -22,7 +22,9 @@ def emitter(max_iterations=None):
 
     # create sockets for each node
     sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in nodes]
-    
+    data = f'Sending from {server_host_in} to {host1}:{port1} and {host2}:{port2}'
+    for sock, (host, port) in zip(sockets, nodes):
+                sock.sendto(data.encode('utf-8'), (host, port))
     # current_socket_index = 0
 
     #get initial hash
