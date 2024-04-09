@@ -15,6 +15,7 @@ def emit_heartbeat():
     db_server_user = os.environ['DB_SERVER_USER']
     db_server_pass = os.environ['DB_SERVER_PASS']
     server_host_out = os.environ['SERVER_HOST_OUT'].split(';')
+    server_host_in = os.environ['SERVER_HOST_IN']
 
     class Connection:
         def __init__(self, user, password, host, port) -> None:
@@ -59,7 +60,7 @@ def emit_heartbeat():
 
             # Notify subscribers
             for subscriber in subscribers:
-                message = HeartbeatProtocol.write(timestamp, subscriber.dest_host, status)
+                message = HeartbeatProtocol.write(timestamp, server_host_in, status)
                 subscriber: Subscriber
                 subscriber.notify(message)
                 logging.info(f'[{str(timestamp).zfill(20)}]\t{subscriber.dest_host}:{subscriber.dest_port} is notified.')

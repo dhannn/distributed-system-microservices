@@ -4,7 +4,9 @@ import sys
 import mysql.connector
 from transactions import *
 
-def listener(host, port):
+def listener():
+    server_host_in = os.environ['SERVER_HOST_IN']
+    server_port_in = int(''.join(server_host_in.split('.')[1:]))
     listener_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     transactions = Transactions()
     parser = LogParser()
@@ -20,7 +22,7 @@ def listener(host, port):
 
     # bind host and port
     try:
-        listener_socket.bind((host, port))
+        listener_socket.bind((server_host_in, server_port_in))
     except socket.error as e:
         print(str(e))
         print("Error binding to host and port")
@@ -38,7 +40,11 @@ def listener(host, port):
             except Exception as e:
                 listener_socket.send(f'NACK {e}'.encode('utf-8'))
 
-
+            listener_socket.close()
     except KeyboardInterrupt:
         print("Program terminated.")
         sys.exit(0)
+    finally:
+        listener_socket.close()
+    
+listener
