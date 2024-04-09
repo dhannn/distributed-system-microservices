@@ -1,6 +1,12 @@
 import time
 import socket
 import hashlib
+import os
+
+host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
+host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
+port1 = os.environ['SERVER_HOST_OUT'].split(';')[0].replace('.', '')
+port2 = os.environ['SERVER_HOST_OUT'].split(';')[1].replace('.', '')
 
 def file_checksum(filename):
     with open(filename, 'rb') as f:
@@ -60,4 +66,4 @@ def emitter(nodes, filename_to_monitor, max_iterations=None):
         time.sleep(1)
         iteration += 1
 
-emitter()
+emitter([(host1, port1), (host2, port2)])
