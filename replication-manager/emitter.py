@@ -20,8 +20,8 @@ def emitter(max_iterations=None):
 
     nodes = [(host1, int(port1)), (host2, int(port2))]
     # create sockets for each node
-    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket.bind((server_host_in, server_port_in))
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((server_host_in, server_port_in))
     #sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
     sockets = []
     # connect to nodes
