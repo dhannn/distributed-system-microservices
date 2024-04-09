@@ -12,8 +12,8 @@ def file_checksum(filename):
 def emitter(max_iterations=None):
     host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
     host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
-    port1 = os.environ['SERVER_HOST_OUT'].split(';')[0].replace('.', '')
-    port2 = os.environ['SERVER_HOST_OUT'].split(';')[1].replace('.', '')
+    port1 = int(''.join(host1.split('.')[1:]))
+    port2 = int(''.join(host2.split('.')[1:]))
     filename_to_monitor = os.environ['TRANSACTION_LOG']
 
     nodes = [(host1, int(port1)), (host2, int(port2))]
