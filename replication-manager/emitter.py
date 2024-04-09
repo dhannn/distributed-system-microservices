@@ -10,6 +10,8 @@ def file_checksum(filename):
     return readable_hash
 
 def emitter(max_iterations=None):
+    server_host_in = os.environ['SERVER_HOST_IN']
+    server_port_in = int(''.join(server_host_in.split('.')[1:]))
     host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
     host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
     port1 = int(''.join(host1.split('.')[1:]))
@@ -18,12 +20,16 @@ def emitter(max_iterations=None):
 
     nodes = [(host1, int(port1)), (host2, int(port2))]
     # create sockets for each node
-    sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
-
+    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket.bind((server_host_in, server_port_in))
+    #sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
+    sockets = []
     # connect to nodes
-    for sock, (host, port) in zip(sockets, nodes):
-        sock.connect((host, port))
-        
+    # for sock, (host, port) in zip(sockets, nodes):
+    #     sock.connect((host, port))
+    client_socket, address = socket.accept()
+    print(f"Accepted connection from {address}")
+    sockets.append(client_socket)
     current_socket_index = 0
 
     #get initial hash
