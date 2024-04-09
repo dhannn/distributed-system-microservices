@@ -6,7 +6,7 @@ from transactions import *
 
 def listener():
     server_host_in = os.environ['SERVER_HOST_IN']
-    server_port_in = int(''.join(server_host_in.split('.')[1:]))
+    server_port_in = int(''.join(server_host_in.split('.')[3:]))
     listener_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     transactions = Transactions()
     parser = LogParser()
