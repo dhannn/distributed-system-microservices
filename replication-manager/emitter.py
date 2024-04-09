@@ -3,18 +3,20 @@ import socket
 import hashlib
 import os
 
-host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
-host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
-port1 = os.environ['SERVER_HOST_OUT'].split(';')[0].replace('.', '')
-port2 = os.environ['SERVER_HOST_OUT'].split(';')[1].replace('.', '')
-
 def file_checksum(filename):
     with open(filename, 'rb') as f:
         bytes = f.read()
         readable_hash = hashlib.md5(bytes).hexdigest()
     return readable_hash
 
-def emitter(nodes, filename_to_monitor, max_iterations=None):
+def emitter(max_iterations=None):
+    host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
+    host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
+    port1 = os.environ['SERVER_HOST_OUT'].split(';')[0].replace('.', '')
+    port2 = os.environ['SERVER_HOST_OUT'].split(';')[1].replace('.', '')
+    filename_to_monitor = os.environ['TRANSACTION_LOG']
+
+    nodes = [(host1, port1), (host2, port2)]
     # create sockets for each node
     sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
 
@@ -66,4 +68,4 @@ def emitter(nodes, filename_to_monitor, max_iterations=None):
         time.sleep(1)
         iteration += 1
 
-emitter([(host1, port1), (host2, port2)])
+emitter()
