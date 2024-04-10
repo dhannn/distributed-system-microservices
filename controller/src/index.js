@@ -16,6 +16,6 @@ app.get('/appt', (req, res) => {
 });
 
 const PORT = 3000;
-app.listen(port, () => {
+app.listen(PORT, () => {
     console.log(`Server is running locally on port ${PORT}`);
 });
