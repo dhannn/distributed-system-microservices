@@ -72,34 +72,7 @@ class ConcurrentTransaction {
                     reject(err);
                 });
         });
-
-        return new Promise((resolve, reject) => {
-
-            let isValid = true;
-            
-            for (const key in this.read_timestamps) {
-
-                const previous_timestamp = this.read_timestamps[key].version;
-                
-                this.queryVersion(key, (err, res) => {
-                    console.log(this.read_timestamps);
-                    console.log(res);
-                    if (err) {
-                        return reject(err);
-                    }
-
-                    if (previous_timestamp !== res) {
-                        isValid = false;
-                    }
-                });
-
-                if (!isValid) {
-                    break;
-                }
-            }
-           
-            resolve(isValid);
-        });
+        
     }
 
     queryVersion(primary_key, callback) {
