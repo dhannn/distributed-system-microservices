@@ -8,6 +8,8 @@ if (process.argv.includes('--debug')) {
 class ConcurrentTransaction {
 
     static db_connection = ConcurrentTransaction.initializeDbConnection();
+    static remote_dbs = ConcurrentTransaction.initializeDbConnections();
+    static dbs = ConcurrentTransaction.initializeDbConnections();
     read_timestamps = {}
 
     static initializeDbConnection() {
@@ -31,6 +33,44 @@ class ConcurrentTransaction {
 
         return conn;
     }
+
+    static initializeDbConnections() {
+
+        const hosts = process.env.DB_SERVER_HOSTS.split(';');
+        const users = process.env.DB_SERVER_USERS.split(';');
+        const passess = process.env.DB_SERVER_PASSES.split(';');
+
+        let conns = [];
+
+        for (let i = 0; i < hosts.length; i++) {
+            let conn = mysql.createConnection({
+                'host': hosts[i],
+                'port': process.env.DB_SERVER_PORT,
+                'user': users[i],
+                'password': passess[i],
+                'database': 'SeriousMD'
+            });
+
+            conn.connect(err => {
+                if (err) {
+                    return console.log('Error %o', err);
+                }
+
+                console.log('Concurrency manager is connected to remote databases');
+            });
+
+            conns.push(conn);
+        
+            conn.on('error', (err) => {
+                if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                    console.error('[%s] Database connection error: Unable to connect to database', new Date());
+                }
+            });
+        }
+
+        return conns;
+    }
+
 
     watchRecord(primary_key) {
         this.queryVersion(primary_key, (err, res) => {
