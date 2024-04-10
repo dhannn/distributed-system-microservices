@@ -56,7 +56,7 @@ class Connection:
                 database='SeriousMD'
             )
         except Exception as e:
-            print(e)
+            raise e
     
     def execute_query(self, query):
         is_success = True
