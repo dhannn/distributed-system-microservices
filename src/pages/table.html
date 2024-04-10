@@ -34,19 +34,17 @@
         window.onload = function () {
           const urlParams = new URLSearchParams(window.location.search);
           const apptId = urlParams.get("apptId");
-          let url = "/appts";
-          if (apptId) {
-            url += `/${apptId}`;
+
+          if (!apptId) {
+            return;
           }
+
+          let url = "/appts/" + apptId;
 
           fetch(url)
             .then((response) => response.json())
             .then((data) => {
-              if (apptId) {
-                buildTable([data]);
-              } else {
-                buildTable(data);
-              }
+              buildTable([data]);
             })
             .catch((error) => console.error("Error:", error));
 
@@ -55,12 +53,12 @@
 
             for (var i = 0; i < data.length; i++) {
               var row = `<tr>
-                            <td>${data[i].id}</td>
-                            <td>${data[i].time_queued}</td>
-                            <td>${data[i].region}</td>
-                            <td>${data[i].status}</td>
-                            <td>${data[i].version}</td>
-                        </tr>`;
+                      <td>${data[i].id}</td>
+                      <td>${data[i].time_queued}</td>
+                      <td>${data[i].region}</td>
+                      <td>${data[i].status}</td>
+                      <td>${data[i].version}</td>
+                  </tr>`;
               tableBody.innerHTML += row;
             }
           }
