@@ -7,16 +7,17 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, "/")));
 app.use("/", express.static(path.join(__dirname, "pages")));
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "/index.html"));
 });
 
-app.get("/appts", async (req, res) => {
+app.post("/appts", async (req, res) => {
   try {
-    const appointments = await tm.viewAppointments();
-    console.log("Appointments:", appointments);
-    res.json(appointments);
+    const newAppointment = req.body;
+    const appointment = await tm.addAppointment(newAppointment);
+    res.status(201).json(appointment);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
