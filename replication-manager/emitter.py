@@ -11,7 +11,6 @@ def file_checksum(filename):
 
 def emitter(max_iterations=None):
     server_host_in = os.environ['SERVER_HOST_IN']
-    server_port_in = int(''.join(server_host_in.split('.')[1:]))
     host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
     host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
     port1 = int(''.join(host1.split('.')[3:]))
