@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const bookApptBtn = document.querySelector(".book-appt-btn");
   bookApptBtn.addEventListener("click", function () {
     const selectedRegion = document.querySelector(".selected-region").value;
+    console.log("Selected region:", selectedRegion);
 
     fetch("/appts", {
       method: "POST",
