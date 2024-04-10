@@ -2,7 +2,6 @@ let fileBuffer = ''
 
 function appendFile(path, data, callback) {
     fileBuffer += data;
-    fileBuffer += '\n';
     console.log(fileBuffer);
 }
 
@@ -14,4 +13,4 @@ function resetFileBuffer() {
     fileBuffer = '';
 }
 
-module.exports = { appendFile, getFileBuffer, resetFileBuffer }
+module.exports = { appendFile, getFileBuffer, resetFileBuffer };

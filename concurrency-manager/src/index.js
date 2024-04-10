@@ -20,11 +20,16 @@ class ConcurrentTransaction {
         });
         
         conn.connect(err => {
-            if (err) throw err;
-            console.log('Concurrency Manager connected to the database')
+            console.log('Concurrency Manager connected to the database');
+        });
+        
+        conn.on('error', (err) => {
+            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                console.error('[%s] Database connection error: Unable to connect to database', new Date());
+            }
         });
 
-        return conn
+        return conn;
     }
 
     watchRecord(primary_key) {
@@ -40,6 +45,34 @@ class ConcurrentTransaction {
     }
 
     end() {
+        let promises = [];
+
+        for (const key in this.read_timestamps) {
+            promises.push(new Promise((resolve, reject) => {
+                const previous_timestamp = this.read_timestamps[key].version;
+                
+                this.queryVersion(key, (err, res) => {
+                    
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    resolve(previous_timestamp === res);
+                });
+                
+            }));
+        };
+
+        return new Promise((resolve, reject) => {
+            
+            Promise.all(promises)
+                .then((res) => {
+                    resolve(res.every(v => v === true));
+                }).catch((err) => {
+                    reject(err);
+                });
+        });
+
         return new Promise((resolve, reject) => {
 
             let isValid = true;
@@ -49,7 +82,8 @@ class ConcurrentTransaction {
                 const previous_timestamp = this.read_timestamps[key].version;
                 
                 this.queryVersion(key, (err, res) => {
-                    
+                    console.log(this.read_timestamps);
+                    console.log(res);
                     if (err) {
                         return reject(err);
                     }
@@ -57,13 +91,13 @@ class ConcurrentTransaction {
                     if (previous_timestamp !== res) {
                         isValid = false;
                     }
-                })
+                });
 
                 if (!isValid) {
                     break;
                 }
             }
-
+           
             resolve(isValid);
         });
     }

@@ -7,8 +7,24 @@ const DBError = require('./error');
 class TransactionManager { 
     
     static logger = new TransactionLogger();
-    static concurrencyManager = new ConcurrencyManager();
-    static db_connection = TransactionManager.initializeDbConnection();
+    static concurrencyManager;
+    static db_connection;
+    static isConnected = false;
+
+    constructor() {
+        TransactionManager.db_connection = TransactionManager.initializeDbConnection();
+        TransactionManager.concurrencyManager = new ConcurrencyManager();
+    }
+
+    initialize() {
+        try {
+            TransactionManager.db_connection = TransactionManager.initializeDbConnection();
+            TransactionManager.concurrencyManager = new ConcurrencyManager();
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     static convertOperationToQuery(operation, id, args) {
         const operations = {
@@ -27,6 +43,12 @@ class TransactionManager {
 
     static setIsolationLevel(db_connection, isolationLevel) {
         return new Promise((resolve, reject) => {
+            
+            if (!TransactionManager.isConnected) {
+                const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                reject(e);
+            }
+            
             const sql = `SET SESSION TRANSACTION ISOLATION LEVEL ${isolationLevel}`;
 
             db_connection.query(sql, (err) => {
@@ -40,15 +62,22 @@ class TransactionManager {
     }
 
     static executeQuery(db_connection, sql) {
+
         return new Promise((resolve, reject) => {
+            
+            if (!TransactionManager.isConnected) {
+                const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                reject(e);
+            }
+
             db_connection.query(sql, (err, res) => {
                 
                 if (err) {
-                    if (err.code === 'ECONNRESET') {
-                        return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
+                    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                        return reject(new DBError(DBError.UNABLE_TO_CONNECT));
                     }
 
-                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
+                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR, err));
                 } else {
                     resolve(res);
                 }
@@ -60,10 +89,21 @@ class TransactionManager {
     async viewAppointment(id) {
         
         return new Promise((resolve, reject) => {
+                    
+            if (!TransactionManager.isConnected) {
+                const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                return reject(e);
+            }
                         
             const beginViewAppointment = async (err) => {
-                
+
                 if (err) {
+
+                    if (!TransactionManager.isConnected) {
+                        const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                        return reject(e);
+                    }
+
                     return reject(new DBError(DBError.INTERNAL_SERVER_ERROR, err));
                 }
                 
@@ -74,15 +114,21 @@ class TransactionManager {
 
                     const result = await TransactionManager.executeQuery(
                         db_connection, sql);
-
+                    
                     if (result.length === 0) {
-                        return reject(new DBError.RECORD_NOT_FOUND);
+                        return reject(new DBError(DBError.RECORD_NOT_FOUND));
                     }
         
-                    resolve(result[0])
+                    resolve(result[0]);
                     
                 } catch (error) {
-                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
+                    
+                    if (!TransactionManager.isConnected) {
+                        const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                        return reject(e);
+                    }
+
+                    return reject(error);
                 }
     
             };
@@ -99,15 +145,15 @@ class TransactionManager {
         
         return new Promise((resolve, reject) => {
 
+            if (!TransactionManager.isConnected) {
+                const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                reject(e);
+            }
+
             const db_connection = TransactionManager.db_connection;
             const beginGenerateReport = async (err) => {
                 
                 if (err) {
-                    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                        console.log('Unable connect to the database server');
-                        return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
-                    }
-
                     return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
                 }
                 
@@ -130,6 +176,12 @@ class TransactionManager {
     async addAppointment(region) {
 
         return new Promise((resolve, reject) => {
+
+            if (!TransactionManager.isConnected) {
+                const e = new DBError(DBError.UNABLE_TO_CONNECT);
+                return reject(e);
+            }
+
             const db_connection = TransactionManager.db_connection;
             const logger = new TransactionLogger();
 
@@ -138,12 +190,6 @@ class TransactionManager {
             const lsn = logger.start();
 
             const beginAddAppointment = async (err) => {
-                
-                if (err) {
-
-                    return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
-
-                }
 
                 try {
     
@@ -151,13 +197,14 @@ class TransactionManager {
                         'INSERT', null, ['status', region]);
                     const res = await TransactionManager.executeQuery(
                         db_connection, sql);
+
                     
                     const sql2 = TransactionManager.convertOperationToQuery(
                         'VIEW', res.insertId, []);
                     const info = await TransactionManager.executeQuery(
                         db_connection, sql2);
 
-                    db_connection.commit(async (err) => {
+                    db_connection.commit(async () => {
 
                         const args = parseArgs(info[0]);
 
@@ -165,39 +212,24 @@ class TransactionManager {
                             .then(() => {
                                 logger.end(lsn, 'COMMIT');
                             });
-
                     });
 
                     resolve(info);
 
                 } catch (error) {
                     
-                    if (error) {
-                        if (error.code === 'PROTOCOL_CONNECTION_LOST') {
-                            console.log('Unable connect to the database server');
-                            return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
-                        }
-    
-                        return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
-                    }
+                    if (!this.isConnected) {
+                        logger.end(lsn, 'ABORT');
+                        return reject(error);
+                    } 
 
-                    logger.end(lsn, 'ABORT');
                     db_connection.rollback((err) => {
                 
                         if (err) {
-                            
-                            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                                console.log('Unable connect to the database server');
-                                return reject(new DBError(DBError.DATABASE_CONNECTION_ERROR));
-                            }
-        
-                            return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
-        
+                            return reject(new DBError(DBError.INTERNAL_SERVER_ERROR, err));
                         }
 
-                    })
-                    reject(error);
-
+                    });
                 }
 
             }
@@ -282,11 +314,24 @@ class TransactionManager {
         
         conn.connect(err => {
             if (err) {
-                if (err.code === 'ECONNRESET') {
-                    console.log('Waiting for the database server to reset')
+                if (err.code === 'ECONNREFUSED') {
+                    const e = new DBError(DBError.UNABLE_TO_CONNECT, err);
+                    e.log();
+                    TransactionManager.isConnected = false;
+                    return;
                 }
-            }
+            };
+
+            TransactionManager.isConnected = true;
             console.log('Transaction Manager connected to the database');
+        });
+
+        conn.on('error', (err) => {
+            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                const e = new DBError(DBError.UNABLE_TO_CONNECT, err);
+                TransactionManager.isConnected = false;
+                e.log();
+            }
         });
 
         return conn;
@@ -296,10 +341,15 @@ class TransactionManager {
 
 module.exports = TransactionManager
 
-const x =  new TransactionManager();
-for (let i = 0; i < 5000; i++) {
-    x.addAppointment('Luzon')
-        .catch((err) => {
-            console.log(err);
-        });
-}
+// const x =  new TransactionManager();
+
+// setTimeout(() => {
+
+    
+//     for (let i = 0; i < 1000; i++) {
+//         x.viewAppointment(i)
+//         .catch((err) => {
+//             console.log(err);
+//         });
+//     }
+// }, 1000)

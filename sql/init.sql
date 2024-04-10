@@ -2,11 +2,13 @@ CREATE DATABASE IF NOT EXISTS SeriousMD;
 
 USE SeriousMD;
 
+DROP TABLE Appointments;
+
 CREATE TABLE IF NOT EXISTS Appointments (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    patient_name VARCHAR(255),
-    doctor_name VARCHAR(255),
+    time_queued TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     region VARCHAR(8),
-    appt_status VARCHAR(9)
+    status VARCHAR(9) DEFAULT 'Queued',
+    version INT DEFAULT 0
 );
 

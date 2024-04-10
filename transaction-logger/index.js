@@ -7,29 +7,40 @@ if (process.argv.includes('--debug')) {
 
 class TransactionLogger {
 
-    static log_directory = process.env.LOG_DIRECTORY;
+    static log_directory;
 
-    currentLSN = 0;
+    constructor() {
+        TransactionLogger.log_directory = process.env.LOG_DIRECTORY;
+    }
+
+    static currentLSN = 0;
 
     start() {
-        let lsn = this.currentLSN;
-        this.currentLSN += 1;
+        let lsn = TransactionLogger.currentLSN;
+        TransactionLogger.currentLSN += 1;
         this.logEntry(lsn, 'START')
         return lsn;
     }
 
-    addOperation(lsn, operation, primary_key, args) {
-        let entryBody = `${operation} ${primary_key} ${args}`;
-        this.logEntry(lsn, entryBody);
+    addOperation(lsn, operation, primary_key, args) { 
+        return new Promise((resolve, _) => {
+            let entryBody = `${operation} ${primary_key} ${args}`;
+            this.logEntry(lsn, entryBody, resolve);
+        })
     }
 
     end(lsn, status) {
         this.logEntry(lsn, status)
     }
     
-    logEntry(lsn, entryContent) {
-        let entry = `${lsn.toString().padStart(3, '0')} ${entryContent}`;
-        fs.appendFile(TransactionLogger.log_directory, entry)
+    logEntry(lsn, entryContent, callback) {
+        let entry = `${lsn.toString().padStart(3, '0')} ${entryContent}\n`;
+        fs.appendFile(TransactionLogger.log_directory, entry, (err) => {
+            if (err) {
+                console.log(err);
+                throw err;
+            }
+        }, callback);
     }
 }
 
