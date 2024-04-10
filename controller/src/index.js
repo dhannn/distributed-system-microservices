@@ -10,5 +10,12 @@ app.get('/appt', (req, res) => {
     transactions.viewAppointment(id)
         .then((data) => {
             res.status('200').send(data);
-        })
+        }).catch((error) => {
+            res.status('404').send(error);
+        });
+});
+
+const PORT = 3000;
+app.listen(port, () => {
+    console.log(`Server is running locally on port ${PORT}`);
 });
