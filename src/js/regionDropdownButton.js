@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     regionLink.addEventListener("click", function (event) {
       const selectedRegion = event.target.textContent;
       selectedRegionInput.value = selectedRegion;
-      dropdownBtn.textContent = "Region Selected: " + selectedRegion; // Update button text
+      dropdownBtn.textContent = "Region Selected: " + selectedRegion;
 
       console.log("Clicked on region:", selectedRegionInput.value);
     });
