@@ -6,6 +6,9 @@
     <title>STADVDB Web App</title>
     <link rel="stylesheet" href="./styles/index.css" />
     <script src="./js/searchButton.js"></script>
+    <script src="./js/regionDropdownButton.js"></script>
+    <script src="./js/genReportButton.js"></script>
+    <script src="./js/bookApptButton.js"></script>
   </head>
   <body>
     <div class="main">
@@ -24,9 +27,9 @@
           <div class="book-appt-dropdown">
             <button class="book-appt-dropdown-btn">Region &nbsp; ▼</button>
             <div class="book-appt-dropdown-content">
-              <a id="luzon" href="#">Luzon</a>
-              <a id="visayas" href="#">Visayas</a>
-              <a id="mindanao" href="#">Mindanao</a>    
+              <a id="luzon"    class="selected-region" href="#">Luzon</a>
+              <a id="visayas"  class="selected-region" href="#">Visayas</a>
+              <a id="mindanao" class="selected-region" href="#">Mindanao</a>    
             </div>
           </div>
           <button class="book-appt-btn">
