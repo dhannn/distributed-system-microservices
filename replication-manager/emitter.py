@@ -10,21 +10,24 @@ def file_checksum(filename):
     return readable_hash
 
 def emitter(max_iterations=None):
+    server_host_in = os.environ['SERVER_HOST_IN']
+    server_port_in = int(''.join(server_host_in.split('.')[1:]))
     host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
     host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
-    port1 = os.environ['SERVER_HOST_OUT'].split(';')[0].replace('.', '')
-    port2 = os.environ['SERVER_HOST_OUT'].split(';')[1].replace('.', '')
+    port1 = int(''.join(host1.split('.')[3:]))
+    port2 = int(''.join(host2.split('.')[3:]))
     filename_to_monitor = os.environ['TRANSACTION_LOG']
 
-    nodes = [(host1, port1), (host2, port2)]
-    # create sockets for each node
-    sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in nodes]
+    nodes = [(host1, int(port1)), (host2, int(port2))]
 
-    # connect to nodes
+    # create sockets for each node
+    sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in nodes]
+
+    data = f'Sending from {server_host_in} to {host1}:{port1} and {host2}:{port2}'
+    print(data)
     for sock, (host, port) in zip(sockets, nodes):
-        sock.connect((host, port))
-        
-    current_socket_index = 0
+        sock.sendto(data.encode('utf-8'), (host, port))
+    # current_socket_index = 0
 
     #get initial hash
     last_known_hash = file_checksum(filename_to_monitor)
@@ -42,9 +45,8 @@ def emitter(max_iterations=None):
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
 
-            sock = sockets[current_socket_index]
-            sock.sendall(data.encode('utf-8'))
-            current_socket_index = (current_socket_index + 1) % len(sockets)
+            for sock, (host, port) in zip(sockets, nodes):
+                sock.sendto(data.encode('utf-8'), (host, port))
 
             # ACK/NACK part
             response = sock.recv(1024).decode('utf-8')

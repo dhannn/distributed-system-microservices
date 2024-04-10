@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('./__mocks__/fs');
 
 if (process.argv.includes('--debug')) {
     const dotenv = require('dotenv');
