@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", function () {
   const searchButton = document.getElementById("search-button");
+  console.log('testssss');
   searchButton.addEventListener("click", async function () {
     // Add search functionality here
     const apptId = document.getElementsByClassName('search-field')[0].textContent;
