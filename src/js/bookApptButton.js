@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((response) => response.json())
       .then((data) => {
         console.log("Success:", data);
-        const apptId = data.id;
+        const apptId = data[0].id;
         window.location.href = `../pages/table.html?apptId=${apptId}`;
       })
       .catch((error) => {
