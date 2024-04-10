@@ -34,7 +34,7 @@
         window.onload = function () {
           const urlParams = new URLSearchParams(window.location.search);
           const apptId = urlParams.get("apptId");
-          let url = "appts";
+          let url = "/appts";
           if (apptId) {
             url += `/${apptId}`;
           }
@@ -43,7 +43,7 @@
             .then((response) => response.json())
             .then((data) => {
               if (apptId) {
-                buildTable([data]); // Wrap data in an array because buildTable expects an array
+                buildTable([data]);
               } else {
                 buildTable(data);
               }
