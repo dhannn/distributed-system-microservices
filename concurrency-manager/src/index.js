@@ -73,33 +73,64 @@ class ConcurrentTransaction {
 
 
     watchRecord(primary_key) {
-        this.queryVersion(primary_key, (err, res) => {
+        this.queryVersion(
+            ConcurrentTransaction.db_connection, primary_key, (err, res) => {
             if (err) {
                 throw err;
             }
 
             this.read_timestamps[primary_key] = {
-                version: res
+                [ConcurrentTransaction.db_connection.threadId]: res
+            };
+        });
+
+        this.queryVersion(
+            ConcurrentTransaction.dbs[0], primary_key, (err, res) => {
+            if (err) {
+                throw err;
+            }
+
+            this.read_timestamps[primary_key] = {
+                [ConcurrentTransaction.dbs[0].threadId]: res
+            };
+        });
+
+        this.queryVersion(
+            ConcurrentTransaction.dbs[1], primary_key, (err, res) => {
+            if (err) {
+                throw err;
+            }
+
+            this.read_timestamps[primary_key] = {
+                [ConcurrentTransaction.dbs[1].threadId()]: res
             };
         });
     }
 
     end() {
         let promises = [];
+        const dbs = [
+            ConcurrentTransaction.db_connection,
+            ConcurrentTransaction.dbs[0],
+            ConcurrentTransaction.dbs[1]
+        ]
 
         for (const key in this.read_timestamps) {
             promises.push(new Promise((resolve, reject) => {
-                const previous_timestamp = this.read_timestamps[key].version;
                 
-                this.queryVersion(key, (err, res) => {
-                    
-                    if (err) {
-                        return reject(err);
-                    }
+                for (const db in dbs) {
+                    const previous_timestamp = this.read_timestamps[key][dbs[db].threadId()];
 
-                    resolve(previous_timestamp === res);
-                });
-                
+                    this.queryVersion(dbs[db], key, (err, res) => {
+                        
+                        if (err) {
+                            return reject(err);
+                        }
+
+                        resolve(previous_timestamp === res);
+                    });
+                    
+                }
             }));
         };
 
@@ -115,8 +146,8 @@ class ConcurrentTransaction {
         
     }
 
-    queryVersion(primary_key, callback) {
-        ConcurrentTransaction.db_connection.query(
+    queryVersion(conn, primary_key, callback) {
+            conn.query(
             'SELECT version FROM Appointments WHERE id = ?', [primary_key],
             (err, res) =>
             {
@@ -125,6 +156,8 @@ class ConcurrentTransaction {
                     throw err;
                 };
 
+                if (res.length === 0)
+                    callback(false, undefined);
                 callback(false, res[0].version);
 
             }
