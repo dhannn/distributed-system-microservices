@@ -1,60 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <!--JQuery-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>STADVDB Web App</title>
-    <link rel="stylesheet" href="../styles/table.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-</head>
-<body>
+    <link rel="stylesheet" href="../styles/table.css" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
     <div class="main">
-        <div class="query"></div>
-        <table class="table table-striped">
-            <tr class="table-header">
-                <th>Appointment ID</th>
-                <th>Time Queued</th>
-                <th>Region</th>
-                <th>Status</th>
-                <th>Version</th>
-            </tr>
+      <div class="query"></div>
+      <table class="table table-striped">
+        <tr class="table-header">
+          <th>Appointment ID</th>
+          <th>Time Queued</th>
+          <th>Region</th>
+          <th>Status</th>
+          <th>Version</th>
+        </tr>
 
-            <tbody id="table-body">
-        
-            </tbody>
-        </table>
+        <tbody id="table-body"></tbody>
+      </table>
 
-        <script>
-            var sampleData = [
-                {'id':'1', 'time_queued':'2020-09-30','region':'Luzon','status':'Queued','version':'0' },
-                {'id':'2', 'time_queued':'2021-01-21','region':'Visayas','status':'NoShow','version':'0' },
-                {'id':'3', 'time_queued':'2022-02-13','region':'Mindanao','status':'Cancel','version':'0' },
-                ]
+      <script>
+        window.onload = function () {
+          const urlParams = new URLSearchParams(window.location.search);
+          const apptId = urlParams.get("apptId");
+          let url = "appts";
+          if (apptId) {
+            url += `/${apptId}`;
+          }
 
-                buildTable(sampleData)
+          fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+              if (apptId) {
+                buildTable([data]); // Wrap data in an array because buildTable expects an array
+              } else {
+                buildTable(data);
+              }
+            })
+            .catch((error) => console.error("Error:", error));
 
-            function buildTable(data){
-                var tableBody = document.getElementById('table-body')
+          function buildTable(data) {
+            var tableBody = document.getElementById("table-body");
 
-                for (var i = 0; i < data.length; i++){
-                    var row = `<tr>
-                                    <td>${data[i].id}</td>
-                                    <td>${data[i].time_queued}</td>
-                                    <td>${data[i].region}</td>
-                                    <td>${data[i].status}</td>
-                                    <td>${data[i].version}</td>
-                            </tr>`
-                    tableBody.innerHTML += row
-
-
-                }
+            for (var i = 0; i < data.length; i++) {
+              var row = `<tr>
+                            <td>${data[i].id}</td>
+                            <td>${data[i].time_queued}</td>
+                            <td>${data[i].region}</td>
+                            <td>${data[i].status}</td>
+                            <td>${data[i].version}</td>
+                        </tr>`;
+              tableBody.innerHTML += row;
             }
-        </script>
-        </div>
+          }
+        };
+      </script>
     </div>
-</body>
+  </body>
 </html>
