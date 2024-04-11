@@ -6,7 +6,9 @@ from transactions import *
 
 def listener():
     server_host_in = os.environ['SERVER_HOST_IN']
+    print(server_host_in)
     server_port_in = int(''.join(server_host_in.split('.')[3:]))
+    print(server_port_in)
     transactions = Transactions()
     parser = LogParser()
     conn = Connection()
