@@ -12,9 +12,10 @@ function attachEditButtonListeners() {
 
       input.addEventListener("blur", function () {
         const newStatus = this.value;
+        console.log(`Sending PUT request to /appts/${id} with status: ${newStatus}`);
 
         // Send a PUT request to the server-side script
-        fetch(`appts/${id}`, {
+        fetch(`/appts/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
