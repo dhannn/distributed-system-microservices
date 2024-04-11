@@ -9,10 +9,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   dropdownContent.forEach(function (regionLink) {
     regionLink.addEventListener("click", function (event) {
-      selectedRegion = event.target.textContent;
-      dropdownBtn.textContent = "Region Selected: " + selectedRegion;
+      window.selectedRegion = event.target.textContent;
+      dropdownBtn.textContent = "Region Selected: " + window.selectedRegion;
 
-      console.log("Clicked on region:", selectedRegion);
+      console.log("Clicked on region:", window.selectedRegion);
     });
   });
 });

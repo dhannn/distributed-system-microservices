@@ -5,18 +5,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   const bookApptBtn = document.querySelector(".book-appt-btn");
   bookApptBtn.addEventListener("click", function () {
-    const selectedRegion = document.querySelector(".selected-region").textContent;
-
     fetch("/appts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ region: selectedRegion }),
+      body: JSON.stringify({ region: window.selectedRegion }),
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Success:", data);
+        console.log("Success:", data[0]);
         const apptId = data[0].id;
         window.location.href = `../pages/table.html?apptId=${apptId}`;
       })
