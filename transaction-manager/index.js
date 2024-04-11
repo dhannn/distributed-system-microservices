@@ -146,6 +146,7 @@ class TransactionManager {
         return new Promise((resolve, reject) => {
 
             if (!TransactionManager.isConnected) {
+                console.log('DB is not connected');
                 const e = new DBError(DBError.UNABLE_TO_CONNECT);
                 reject(e);
             }
@@ -154,6 +155,7 @@ class TransactionManager {
             const beginGenerateReport = async (err) => {
                 
                 if (err) {
+                console.log('Error in beginGenerateReport');
                     return reject(new DBError(DBError.INTERNAL_SERVER_ERROR));
                 }
                 
