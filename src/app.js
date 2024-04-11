@@ -15,8 +15,8 @@ app.get("/", (req, res) => {
 
 app.post("/appts", async (req, res) => {
   try {
-    const newAppointment = req.body;
-    const appointment = await tm.addAppointment(newAppointment);
+    const region = req.body.region;
+    const appointment = await tm.addAppointment(region);
     res.status(201).json(appointment);
   } catch (error) {
     res.status(500).json({ message: error.message });
