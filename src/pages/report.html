@@ -16,16 +16,12 @@
     />
   </head>
   <body>
-    <div class="main">
+    <div class="main" style="display: flex; justify-content: center;">
       <div class="query"></div>
       <table class="table table-striped">
         <tr class="table-header">
-          <th>Appointment ID</th>
-          <th>Time Queued</th>
-          <th>Region</th>
           <th>Status</th>
-          <th>Version</th>
-          <th>Edit</th>
+          <th>Total Appointments</th>
         </tr>
 
         <tbody id="table-body"></tbody>
@@ -33,43 +29,30 @@
 
       <script>
         window.onload = function () {
-          const urlParams = new URLSearchParams(window.location.search);
-          const apptId = urlParams.get("apptId");
-          console.log(apptId);
 
-          if (!apptId) {
-            return;
-          }
-
-          let url = "/appts/" + apptId;
+          let url = "/report";
 
           fetch(url)
             .then((response) => response.json())
             .then((data) => {
-              console.log(data);
-              buildTable([data]);
-              attachEditButtonListeners();
+              buildTable(data);
             })
             .catch((error) => console.error("Error:", error));
 
           function buildTable(data) {
             var tableBody = document.getElementById("table-body");
 
+            console.log(data);
             for (var i = 0; i < data.length; i++) {
               var row = `<tr>
-                      <td>${data[i].id}</td>
-                      <td>${data[i].time_queued}</td>
-                      <td>${data[i].region}</td>
-                      <td>${data[i].status}</td>
-                      <td>${data[i].version}</td>
-                      <td><button class="edit-btn">&#9998;</button></td>
+                      <td>${data[i].status === null? '<strong>Total Appointments</strong>': data[i].status}</td>
+                      <td>${data[i].total}</td>
                   </tr>`;
               tableBody.innerHTML += row;
             }
           }
         };
       </script>
-      <script src="../js/editAppt.js"></script>
     </div>
   </body>
 </html>

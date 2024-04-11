@@ -47,6 +47,7 @@ class Connection:
     db_connection = mysql.connector.MySQLConnection
 
     def __init__(self):
+        print(os.environ)
         try:
             self.db_connection = mysql.connector.connect(
                 user=os.environ['DB_SERVER_USER'],
