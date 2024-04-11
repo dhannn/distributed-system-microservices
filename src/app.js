@@ -46,9 +46,7 @@ app.get("/", (req, res) => {
 app.post("/appts", async (req, res) => {
   try {
     const region = req.body.region;
-    const appointment = await tm.addAppointment(region).catch((error) => {
-      throw error;
-    });
+    const appointment = await tm.addAppointment(region);
     res.status(201).json(appointment);
   } catch (error) {
     console.error(error);
@@ -58,9 +56,7 @@ app.post("/appts", async (req, res) => {
 
 app.get("/report", async (_, res) => {
   try {
-    const report = await tm.generateReport().catch((error) => {
-      throw error;
-    });
+    const report = await tm.generateReport();
     res.json(report);
   } catch (error) {
     console.error(error);
@@ -71,9 +67,7 @@ app.get("/report", async (_, res) => {
 app.get("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const appointment = await tm.viewAppointment(id).catch((error) => {
-      throw error;
-    });
+    const appointment = await tm.viewAppointment(id);
     res.json(appointment);
   } catch (error) {
     console.error(error);
@@ -85,9 +79,7 @@ app.put("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const newStatus = req.body.status;
-    await tm.modifyStatus(id, newStatus).catch((error) => {
-      throw error;
-    });
+    await tm.modifyStatus(id, newStatus);
     res.json({ message: "Appointment status updated successfully." });
   } catch (error) {
     console.error(error);
