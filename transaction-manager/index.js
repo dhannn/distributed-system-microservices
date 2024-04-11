@@ -263,7 +263,7 @@ class TransactionManager {
                 try {
                     
                     const sql = TransactionManager.convertOperationToQuery(
-                        'MODIFY', id, [ 'status', status ]);
+                        'MODIFY', id, [ 'status', `'status'` ]);
                     await TransactionManager.executeQuery(
                         db_connection, sql);
 
