@@ -5,19 +5,50 @@ const TransactionManager = require("../transaction-manager/index.js");
 const tm = new TransactionManager();
 
 const app = express();
+/* const nodes = {
+  luzon: "http://ccscloud.dlsu.edu.ph:20100",
+  visayas: "http://ccscloud.dlsu.edu.ph:20101",
+  mindanao: "http://ccscloud.dlsu.edu.ph:20101",
+};
 
+app.use((req, res, next) => {
+  const region = req.body.region;
+  if (region && nodes[region]) {
+    // Check if the request is already on the correct node
+    if (
+      (region === "luzon" && process.env.NODE_IP === "10.2.0.100") ||
+      ((region === "visayas" || region === "mindanao") && process.env.NODE_IP === "10.2.0.101")
+    ) {
+      next();
+    } else if (process.env.NODE_IP === "10.2.0.99") {
+      // If the current node is the central node, it can handle all requests
+      next();
+    } else {
+      res.redirect(nodes[region] + req.originalUrl);
+    }
+  } else {
+    next();
+  }
+}); */
 app.use(express.static(path.join(__dirname, "/")));
 app.use("/", express.static(path.join(__dirname, "pages")));
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "/index.html"));
+  try {
+    res.sendFile(path.join(__dirname, "/index.html"));
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("An error occurred while trying to load the page");
+  }
 });
 
 app.post("/appts", async (req, res) => {
   try {
     const region = req.body.region;
-    const appointment = await tm.addAppointment(region);
+    const appointment = await tm.addAppointment(region).catch((error) => {
+      throw error;
+    });
     res.status(201).json(appointment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -26,7 +57,9 @@ app.post("/appts", async (req, res) => {
 
 app.get("/report", async (_, res) => {
   try {
-    const report = await tm.generateReport();
+    const report = await tm.generateReport().catch((error) => {
+      throw error;
+    });
     res.json(report);
   } catch (error) {
     res.status(500).json(error);
@@ -36,7 +69,9 @@ app.get("/report", async (_, res) => {
 app.get("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const appointment = await tm.viewAppointment(id);
+    const appointment = await tm.viewAppointment(id).catch((error) => {
+      throw error;
+    });
     res.json(appointment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -47,7 +82,9 @@ app.put("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const newStatus = req.body.status;
-    await tm.modifyStatus(id, newStatus);
+    await tm.modifyStatus(id, newStatus).catch((error) => {
+      throw error;
+    });
     res.json({ message: "Appointment status updated successfully." });
   } catch (error) {
     res.status(500).json({ message: error.message });
