@@ -45,7 +45,7 @@
             console.log(data);
             for (var i = 0; i < data.length; i++) {
               var row = `<tr>
-                      <td>${data[i].status === null? '<br>Total Appointments</br>': data[i].status}</td>
+                      <td>${data[i].status === null? '<em>Total Appointments</em>': data[i].status}</td>
                       <td>${data[i].total}</td>
                   </tr>`;
               tableBody.innerHTML += row;
