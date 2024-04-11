@@ -9,9 +9,9 @@ def file_checksum(filename):
         readable_hash = hashlib.md5(bytes).hexdigest()
     return readable_hash
 
-def poll_size(filename):
-    size = os.stat(filename).st_size
-    return size
+def poll_last_modified(filename):
+    last_modified = os.stat(filename).st_mtime_ns
+    return last_modified
 
 def emitter(max_iterations=None):
     server_host_in = os.environ['SERVER_HOST_IN']
@@ -33,18 +33,18 @@ def emitter(max_iterations=None):
     # current_socket_index = 0
 
     #get initial file size
-    previous_size = poll_size(filename_to_monitor)
+    previous_last_modified = poll_last_modified(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
     iteration = 0
     while max_iterations is None or iteration < max_iterations:
         print(f"Monitoring {filename_to_monitor} for changes...")
-        print(f"Last known hash: {previous_size}")
-        current_size = file_checksum(filename_to_monitor)
-        print(f"Current hash: {current_size}")
-        if current_size != previous_size:
+        print(f"Last known hash: {previous_last_modified}")
+        current_last_modified = file_checksum(filename_to_monitor)
+        print(f"Current hash: {current_last_modified}")
+        if current_last_modified != previous_last_modified:
             print(f"Detected change...")
-            previous_size = current_size
+            previous_last_modified = current_last_modified
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
 
