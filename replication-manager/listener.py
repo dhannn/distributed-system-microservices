@@ -1,11 +1,10 @@
 import socket
 import sys
-import os
-import mysql.connector
+from globals import environ
 from transactions import *
 
 def listener():
-    server_host_in = os.environ['SERVER_HOST_IN']
+    server_host_in = environ['SERVER_HOST_IN']
     server_port_in = int(''.join(server_host_in.split('.')[3:]))
     transactions = Transactions()
     parser = LogParser()

@@ -1,4 +1,4 @@
-const fs = require('./__mocks__/fs');
+const fs = require('fs');
 
 if (process.argv.includes('--debug')) {
     const dotenv = require('dotenv');
@@ -10,7 +10,8 @@ class TransactionLogger {
     static log_directory;
 
     constructor() {
-        TransactionLogger.log_directory = process.env.LOG_DIRECTORY;
+        TransactionLogger.log_directory = '/root/log_files/Transaction.log';
+        console.log(`Transaction Logger initialized at ${TransactionLogger.log_directory}`);
     }
 
     static currentLSN = 0;

@@ -2,6 +2,7 @@ import time
 import socket
 import hashlib
 import os
+from globals import environ
 
 def file_checksum(filename):
     with open(filename, 'rb') as f:
@@ -14,12 +15,12 @@ def poll_last_modified(filename):
     return last_modified
 
 def emitter(max_iterations=None):
-    server_host_in = os.environ['SERVER_HOST_IN']
-    host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
-    host2 = os.environ['SERVER_HOST_OUT'].split(';')[1]
-    port1 = int(''.join(host1.split('.')[3:]))
-    port2 = int(''.join(host2.split('.')[3:]))
-    filename_to_monitor = os.environ['TRANSACTION_LOG']
+    server_host_in = environ['SERVER_HOST_IN']
+    host1 =  environ['SERVER_HOST_OUT'].split(';')[0]
+    host2 = environ['SERVER_HOST_OUT'].split(';')[1]
+    port1 = int(''.join(host1.split('.')[3:])) + 10
+    port2 = int(''.join(host2.split('.')[3:])) + 10
+    filename_to_monitor = '/root/log_files/Transaction.log'
 
     nodes = [(host1, int(port1)), (host2, int(port2))]
 
@@ -40,7 +41,7 @@ def emitter(max_iterations=None):
     while max_iterations is None or iteration < max_iterations:
         print(f"Monitoring {filename_to_monitor} for changes...")
         print(f"Last known hash: {previous_last_modified}")
-        current_last_modified = file_checksum(filename_to_monitor)
+        current_last_modified = poll_last_modified(filename_to_monitor)
         print(f"Current hash: {current_last_modified}")
         if current_last_modified != previous_last_modified:
             print(f"Detected change...")
