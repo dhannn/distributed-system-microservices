@@ -157,7 +157,8 @@ class ConcurrentTransaction {
                 };
 
                 if (res.length === 0)
-                    callback(false, undefined);
+                    return callback(false, undefined);
+                
                 callback(false, res[0].version);
 
             }
