@@ -10,6 +10,11 @@ def file_checksum(filename):
         readable_hash = hashlib.md5(bytes).hexdigest()
     return readable_hash
 
+def print_file(filename):
+    with open(filename, 'r') as f:
+        print(f.read())
+    pass
+
 def poll_last_modified(filename):
     last_modified = os.stat(filename).st_mtime_ns
     return last_modified
@@ -21,7 +26,7 @@ def emitter(max_iterations=None):
     port1 = int(''.join(host1.split('.')[3:])) + 10
     port2 = int(''.join(host2.split('.')[3:])) + 10
     filename_to_monitor = '/root/log_files/Transaction.log'
-
+    print_file(filename_to_monitor)
     nodes = [(host1, int(port1)), (host2, int(port2))]
 
     # create sockets for each node
