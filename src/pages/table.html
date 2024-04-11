@@ -25,6 +25,7 @@
           <th>Region</th>
           <th>Status</th>
           <th>Version</th>
+          <th>Edit</th>
         </tr>
 
         <tbody id="table-body"></tbody>
@@ -34,6 +35,7 @@
         window.onload = function () {
           const urlParams = new URLSearchParams(window.location.search);
           const apptId = urlParams.get("apptId");
+          console.log(apptId);
 
           if (!apptId) {
             return;
@@ -44,7 +46,9 @@
           fetch(url)
             .then((response) => response.json())
             .then((data) => {
+              console.log(data);
               buildTable([data]);
+              attachEditButtonListeners();
             })
             .catch((error) => console.error("Error:", error));
 
@@ -58,12 +62,14 @@
                       <td>${data[i].region}</td>
                       <td>${data[i].status}</td>
                       <td>${data[i].version}</td>
+                      <td><button class="edit-btn">&#9998;</button></td>
                   </tr>`;
               tableBody.innerHTML += row;
             }
           }
         };
       </script>
+      <script src="../js/editButton.js"></script>
     </div>
   </body>
 </html>

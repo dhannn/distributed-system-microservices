@@ -42,6 +42,17 @@ app.get("/appts/:id", async (req, res) => {
   }
 });
 
+app.put("/appts/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const newStatus = req.body.status;
+    await tm.modifyStatus(id, newStatus);
+    res.json({ message: "Appointment status updated successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 80;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
