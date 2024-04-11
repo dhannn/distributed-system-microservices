@@ -43,8 +43,8 @@
             var tableBody = document.getElementById("table-body");
 
             for (var i = 0; i < data.length; i++) {
+              console.log(data[i]);
               var row = `<tr>
-                      ${data.keys()}
                       <td>${data[i]? '': data[i].status}</td>
                       <td>${data[i].total}</td>
                   </tr>`;
