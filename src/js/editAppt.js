@@ -1,4 +1,4 @@
-window.onload = function () {
+document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".edit-btn").forEach((editBtn) => {
     editBtn.addEventListener("click", function () {
       const row = this.parentNode.parentNode;
@@ -35,4 +35,4 @@ window.onload = function () {
       });
     });
   });
-};
+});
