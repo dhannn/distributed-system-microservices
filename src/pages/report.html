@@ -29,12 +29,6 @@
 
       <script>
         window.onload = function () {
-          const urlParams = new URLSearchParams(window.location.search);
-          const apptId = urlParams.get("apptId");
-
-          if (!apptId) {
-            return;
-          }
 
           let url = "/appts/" + apptId;
 
