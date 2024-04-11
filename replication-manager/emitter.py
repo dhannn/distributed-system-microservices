@@ -26,7 +26,6 @@ def emitter(max_iterations=None):
     port1 = int(''.join(host1.split('.')[3:])) + 10
     port2 = int(''.join(host2.split('.')[3:])) + 10
     filename_to_monitor = '/root/log_files/Transaction.log'
-    print_file(filename_to_monitor)
     nodes = [(host1, int(port1)), (host2, int(port2))]
 
     # create sockets for each node
@@ -39,18 +38,19 @@ def emitter(max_iterations=None):
     # current_socket_index = 0
 
     #get initial file size
-    last_known_hash = file_checksum(filename_to_monitor)
+    previous_last_modified = poll_last_modified(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
     iteration = 0
     while max_iterations is None or iteration < max_iterations:
         print(f"Monitoring {filename_to_monitor} for changes...")
-        print(f"Last known hash: {last_known_hash}")
-        current_hash = file_checksum(filename_to_monitor)
-        print(f"Current hash: {current_hash}")
-        if current_hash != last_known_hash:
+        print(f"Last known hash: {previous_last_modified}")
+        current_last_modified = poll_last_modified(filename_to_monitor)
+        print(f"Current hash: {current_last_modified}")
+        print_file(filename_to_monitor)
+        if current_last_modified != previous_last_modified:
             print(f"Detected change...")
-            last_known_hash = current_hash
+            previous_last_modified = current_last_modified
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
 
