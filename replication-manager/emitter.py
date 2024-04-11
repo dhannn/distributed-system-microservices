@@ -4,7 +4,7 @@ import hashlib
 import os
 
 def file_checksum(filename):
-    with open(filename, 'rb') as f:
+    with open(filename, 'r') as f:
         bytes = f.read()
         readable_hash = hashlib.md5(bytes).hexdigest()
     return readable_hash
