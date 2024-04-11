@@ -10,8 +10,7 @@ def file_checksum(filename):
     return readable_hash
 
 def poll_size(filename):
-    with open(filename, 'r') as file:
-        size = os.stat(file).st_size
+    size = os.stat(filename).st_size
     return size
 
 def emitter(max_iterations=None):
