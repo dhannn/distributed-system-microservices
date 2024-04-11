@@ -208,11 +208,19 @@ class TransactionManager {
 
                     db_connection.commit(async () => {
 
+                        if (err) {
+                            return reject(new DBError(DBError.INTERNAL_SERVER_ERROR, err));
+                        }
+
                         const args = parseArgs(info[0]);
 
                         logger.addOperation(lsn, 'INSERT', info[0].id, args)
                             .then(() => {
                                 logger.end(lsn, 'COMMIT');
+                                resolve(info);
+                            })
+                            .catch(error => {
+                                return reject(error);
                             });
                     });
 
