@@ -37,31 +37,29 @@ app.use(express.json());
 app.get("/", (req, res) => {
   try {
     res.sendFile(path.join(__dirname, "/index.html"));
-  } catch (err) {
+  } catch (error) {
     console.error(err);
-    res.status(500).send("An error occurred while trying to load the page");
+    res.status(500).json(error);
   }
 });
 
 app.post("/appts", async (req, res) => {
   try {
     const region = req.body.region;
-    const appointment = await tm.addAppointment(region).catch((error) => {
-      throw error;
-    });
+    const appointment = await tm.addAppointment(region);
     res.status(201).json(appointment);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json(error);
   }
 });
 
 app.get("/report", async (_, res) => {
   try {
-    const report = await tm.generateReport().catch((error) => {
-      throw error;
-    });
+    const report = await tm.generateReport();
     res.json(report);
   } catch (error) {
+    console.error(error);
     res.status(500).json(error);
   }
 });
@@ -69,12 +67,11 @@ app.get("/report", async (_, res) => {
 app.get("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const appointment = await tm.viewAppointment(id).catch((error) => {
-      throw error;
-    });
+    const appointment = await tm.viewAppointment(id);
     res.json(appointment);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json(error);
   }
 });
 
@@ -82,12 +79,11 @@ app.put("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const newStatus = req.body.status;
-    await tm.modifyStatus(id, newStatus).catch((error) => {
-      throw error;
-    });
+    await tm.modifyStatus(id, newStatus);
     res.json({ message: "Appointment status updated successfully." });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json(error);
   }
 });
 
