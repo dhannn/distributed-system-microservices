@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+function attachEditButtonListeners() {
   document.querySelectorAll(".edit-btn").forEach((editBtn) => {
     editBtn.addEventListener("click", function () {
       const row = this.parentNode.parentNode;
@@ -35,4 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   });
-});
+}
+
+window.attachEditButtonListeners = attachEditButtonListeners;
