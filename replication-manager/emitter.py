@@ -20,7 +20,7 @@ def emitter(max_iterations=None):
     host2 = environ['SERVER_HOST_OUT'].split(';')[1]
     port1 = int(''.join(host1.split('.')[3:])) + 10
     port2 = int(''.join(host2.split('.')[3:])) + 10
-    filename_to_monitor = environ['TRANSACTION_LOG']
+    filename_to_monitor = '/root/log_files/Transaction.log'
 
     nodes = [(host1, int(port1)), (host2, int(port2))]
 
