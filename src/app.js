@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+process.env.LOG_DIRECTORY = "root/log_files/Transaction.log";
 const TransactionManager = require("../transaction-manager/index.js");
 const tm = new TransactionManager();
 
@@ -23,12 +24,12 @@ app.post("/appts", async (req, res) => {
   }
 });
 
-app.get('/report', async (_, res) => {
+app.get("/report", async (_, res) => {
   try {
     const report = await tm.generateReport();
     res.json(report);
   } catch (error) {
-    res.status(500).json(error)
+    res.status(500).json(error);
   }
 });
 
