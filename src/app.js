@@ -23,6 +23,15 @@ app.post("/appts", async (req, res) => {
   }
 });
 
+app.get('/report', async (_, res) => {
+  try {
+    const report = await tm.generateReport();
+    res.json(report);
+  } catch (error) {
+    res.status(500).json(error)
+  }
+});
+
 app.get("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
