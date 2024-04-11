@@ -29,11 +29,12 @@
 
         <tbody id="table-body"></tbody>
       </table>
-
+      <script src="../js/editAppt.js"></script>
       <script>
         window.onload = function () {
           const urlParams = new URLSearchParams(window.location.search);
           const apptId = urlParams.get("apptId");
+          console.log(apptId);
 
           if (!apptId) {
             return;
@@ -44,6 +45,7 @@
           fetch(url)
             .then((response) => response.json())
             .then((data) => {
+              console.log(data);
               buildTable([data]);
             })
             .catch((error) => console.error("Error:", error));
@@ -65,7 +67,6 @@
           }
         };
       </script>
-      <script src="../js/editAppt.js"></script>
     </div>
   </body>
 </html>
