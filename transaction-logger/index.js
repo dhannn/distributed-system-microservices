@@ -10,7 +10,7 @@ class TransactionLogger {
     static log_directory;
 
     constructor() {
-        TransactionLogger.log_directory = 'root/log_files/Transaction.log';
+        TransactionLogger.log_directory = '/root/log_files/Transaction.log';
         console.log(`Transaction Logger initialized at ${TransactionLogger.log_directory}`);
     }
 
