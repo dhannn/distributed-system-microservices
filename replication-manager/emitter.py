@@ -40,7 +40,7 @@ def emitter(max_iterations=None):
     while max_iterations is None or iteration < max_iterations:
         print(f"Monitoring {filename_to_monitor} for changes...")
         print(f"Last known hash: {previous_last_modified}")
-        current_last_modified = file_checksum(filename_to_monitor)
+        current_last_modified = poll_last_modified(filename_to_monitor)
         print(f"Current hash: {current_last_modified}")
         if current_last_modified != previous_last_modified:
             print(f"Detected change...")
