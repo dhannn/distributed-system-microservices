@@ -39,18 +39,18 @@ def emitter(max_iterations=None):
     # current_socket_index = 0
 
     #get initial file size
-    previous_last_modified = poll_last_modified(filename_to_monitor)
+    last_known_hash = file_checksum(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
     iteration = 0
     while max_iterations is None or iteration < max_iterations:
         print(f"Monitoring {filename_to_monitor} for changes...")
-        print(f"Last known hash: {previous_last_modified}")
-        current_last_modified = poll_last_modified(filename_to_monitor)
-        print(f"Current hash: {current_last_modified}")
-        if current_last_modified != previous_last_modified:
+        print(f"Last known hash: {last_known_hash}")
+        current_hash = file_checksum(filename_to_monitor)
+        print(f"Current hash: {current_hash}")
+        if current_hash != last_known_hash:
             print(f"Detected change...")
-            previous_last_modified = current_last_modified
+            last_known_hash = current_hash
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
 
