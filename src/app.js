@@ -51,6 +51,7 @@ app.post("/appts", async (req, res) => {
     });
     res.status(201).json(appointment);
   } catch (error) {
+    console.error(error);
     res.status(500).json(error);
   }
 });
@@ -62,6 +63,7 @@ app.get("/report", async (_, res) => {
     });
     res.json(report);
   } catch (error) {
+    console.error(error);
     res.status(500).json(error);
   }
 });
@@ -74,6 +76,7 @@ app.get("/appts/:id", async (req, res) => {
     });
     res.json(appointment);
   } catch (error) {
+    console.error(error);
     res.status(500).json(error);
   }
 });
@@ -87,6 +90,7 @@ app.put("/appts/:id", async (req, res) => {
     });
     res.json({ message: "Appointment status updated successfully." });
   } catch (error) {
+    console.error(error);
     res.status(500).json(error);
   }
 });
