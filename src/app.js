@@ -37,9 +37,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
   try {
     res.sendFile(path.join(__dirname, "/index.html"));
-  } catch (err) {
+  } catch (error) {
     console.error(err);
-    res.status(500).send("An error occurred while trying to load the page");
+    res.status(500).json(error);
   }
 });
 
@@ -51,7 +51,7 @@ app.post("/appts", async (req, res) => {
     });
     res.status(201).json(appointment);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json(error);
   }
 });
 
@@ -74,7 +74,7 @@ app.get("/appts/:id", async (req, res) => {
     });
     res.json(appointment);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json(error);
   }
 });
 
@@ -87,7 +87,7 @@ app.put("/appts/:id", async (req, res) => {
     });
     res.json({ message: "Appointment status updated successfully." });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json(error);
   }
 });
 
