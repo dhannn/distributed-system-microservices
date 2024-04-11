@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
       try {
         const response = await fetch('report/');
         if (response.ok) {
-          window.location.href = `pages/table.html?apptId=${apptId}`;
+          window.location.href = `pages/report.html`;
         }
       } catch (error) {
         console.error(error);
