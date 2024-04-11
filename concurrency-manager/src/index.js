@@ -102,7 +102,7 @@ class ConcurrentTransaction {
             }
 
             this.read_timestamps[primary_key] = {
-                [ConcurrentTransaction.dbs[1].threadId()]: res
+                [ConcurrentTransaction.dbs[1].threadId]: res
             };
         });
     }
@@ -119,7 +119,7 @@ class ConcurrentTransaction {
             promises.push(new Promise((resolve, reject) => {
                 
                 for (const db in dbs) {
-                    const previous_timestamp = this.read_timestamps[key][dbs[db].threadId()];
+                    const previous_timestamp = this.read_timestamps[key][dbs[db].threadId];
 
                     this.queryVersion(dbs[db], key, (err, res) => {
                         
