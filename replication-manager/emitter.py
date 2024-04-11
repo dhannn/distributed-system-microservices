@@ -9,6 +9,11 @@ def file_checksum(filename):
         readable_hash = hashlib.md5(bytes).hexdigest()
     return readable_hash
 
+def poll_size(filename):
+    with open(filename, 'r') as file:
+        size = os.stat(file).st_size
+    return size
+
 def emitter(max_iterations=None):
     server_host_in = os.environ['SERVER_HOST_IN']
     host1 =  os.environ['SERVER_HOST_OUT'].split(';')[0]
@@ -28,19 +33,19 @@ def emitter(max_iterations=None):
         sock.sendto(data.encode('utf-8'), (host, port))
     # current_socket_index = 0
 
-    #get initial hash
-    last_known_hash = file_checksum(filename_to_monitor)
+    #get initial file size
+    previous_size = poll_size(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
     iteration = 0
     while max_iterations is None or iteration < max_iterations:
         print(f"Monitoring {filename_to_monitor} for changes...")
-        print(f"Last known hash: {last_known_hash}")
-        current_hash = file_checksum(filename_to_monitor)
-        print(f"Current hash: {current_hash}")
-        if current_hash != last_known_hash:
+        print(f"Last known hash: {previous_size}")
+        current_size = file_checksum(filename_to_monitor)
+        print(f"Current hash: {current_size}")
+        if current_size != previous_size:
             print(f"Detected change...")
-            last_known_hash = current_hash
+            previous_size = current_size
             with open(filename_to_monitor, 'r') as file:
                 data = file.read()
 
