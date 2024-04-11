@@ -194,7 +194,7 @@ class TransactionManager {
                 try {
     
                     const sql = TransactionManager.convertOperationToQuery(
-                        'INSERT', null, ['status', region]);
+                        'INSERT', null, [region]);
                     const res = await TransactionManager.executeQuery(
                         db_connection, sql);
 
