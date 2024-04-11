@@ -5,15 +5,14 @@
 document.addEventListener("DOMContentLoaded", function () {
   const dropdownBtn = document.querySelector(".book-appt-dropdown-btn");
   const dropdownContent = document.querySelectorAll(".book-appt-dropdown-content a");
-  const selectedRegionInput = document.querySelector(".selected-region");
+  let selectedRegion;
 
   dropdownContent.forEach(function (regionLink) {
     regionLink.addEventListener("click", function (event) {
-      const selectedRegion = event.target.textContent;
-      selectedRegionInput.value = selectedRegion;
+      selectedRegion = event.target.textContent;
       dropdownBtn.textContent = "Region Selected: " + selectedRegion;
 
-      console.log("Clicked on region:", selectedRegionInput.value);
+      console.log("Clicked on region:", selectedRegion);
     });
   });
 });
