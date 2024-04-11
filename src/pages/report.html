@@ -42,8 +42,8 @@
           function buildTable(data) {
             var tableBody = document.getElementById("table-body");
 
+            console.log(data);
             for (var i = 0; i < data.length; i++) {
-              console.log(data[i]);
               var row = `<tr>
                       <td>${data[i]? '': data[i].status}</td>
                       <td>${data[i].total}</td>
