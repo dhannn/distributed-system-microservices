@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!--JQuery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STADVDB Web App</title>
+    <link rel="stylesheet" href="../styles/table.css" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="main">
+      <div class="query"></div>
+      <table class="table table-striped">
+        <tr class="table-header">
+          <th>Status</th>
+          <th>Total Appointments</th>
+        </tr>
+
+        <tbody id="table-body"></tbody>
+      </table>
+
+      <script>
+        window.onload = function () {
+          const urlParams = new URLSearchParams(window.location.search);
+          const apptId = urlParams.get("apptId");
+
+          if (!apptId) {
+            return;
+          }
+
+          let url = "/appts/" + apptId;
+
+          fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+              buildTable([data]);
+            })
+            .catch((error) => console.error("Error:", error));
+
+          function buildTable(data) {
+            var tableBody = document.getElementById("table-body");
+
+            for (var i = 0; i < data.length; i++) {
+              var row = `<tr>
+                      <td>${data[i]? '': data[i].status}</td>
+                      <td>${data[i].total}</td>
+                  </tr>`;
+              tableBody.innerHTML += row;
+            }
+          }
+        };
+      </script>
+    </div>
+  </body>
+</html>
