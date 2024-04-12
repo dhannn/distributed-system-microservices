@@ -9,7 +9,7 @@ class TransactionManager {
     static logger = new TransactionLogger();
     static concurrencyManager;
     static db_connection;
-    static isConnected = false;
+    static isConnected = true;
 
     constructor() {
         TransactionManager.db_connection = TransactionManager.initializeDbConnection();
