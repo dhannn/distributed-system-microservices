@@ -134,7 +134,8 @@ class TransactionManager {
             };
     
             const db_connection = TransactionManager.db_connection;
-            TransactionManager.setIsolationLevel(db_connection, 'READ COMMITTED');
+            TransactionManager.setIsolationLevel(db_connection, 'READ COMMITTED')
+                .catch((err) => console.log(err));
             db_connection.beginTransaction({}, beginViewAppointment);
 
         });
