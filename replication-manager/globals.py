@@ -1,7 +1,7 @@
 environ = {
-    'SERVER_HOST_IN': '',
-    'SERVER_HOST_OUT': '',
-    'TRANSACTION_LOG': '',
+    'SERVER_HOST_IN': '10.2.0.99',
+    'SERVER_HOST_OUT': '10.2.0.100;10.2.101',
+    'TRANSACTION_LOG': '/root/log_files/Transaction.log',
 }
 
 
