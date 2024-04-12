@@ -15,6 +15,15 @@ def print_file(filename):
         print(f.read())
     pass
 
+def get_lines(filename):
+    lines = []
+    num_lines = 0
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        num_lines = len(num_lines)
+    
+    return lines, num_lines
+
 def poll_last_modified(filename):
     last_modified = os.stat(filename).st_mtime_ns
     return last_modified
@@ -37,8 +46,9 @@ def emitter(max_iterations=None):
         sock.sendto(data.encode('utf-8'), (host, port))
     # current_socket_index = 0
 
-    #get initial file size
+    # get initial file size
     previous_last_modified = poll_last_modified(filename_to_monitor)
+    _, last_line = get_lines(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
     iteration = 0
@@ -47,15 +57,17 @@ def emitter(max_iterations=None):
         print(f"Last known hash: {previous_last_modified}")
         current_last_modified = poll_last_modified(filename_to_monitor)
         print(f"Current hash: {current_last_modified}")
-        print_file(filename_to_monitor)
+
         if current_last_modified != previous_last_modified:
             print(f"Detected change...")
             previous_last_modified = current_last_modified
-            with open(filename_to_monitor, 'r') as file:
-                data = file.read()
+            
+            lines, _ = get_lines(filename_to_monitor)
+            new_lines = lines[last_line + 1:]
 
-            for sock, (host, port) in zip(sockets, nodes):
-                sock.sendto(data.encode('utf-8'), (host, port))
+            for data in new_lines:
+                for sock, (host, port) in zip(sockets, nodes):
+                    sock.sendto(data.encode('utf-8'), (host, port))
 
             # ACK/NACK part
             backoff_time = 1
