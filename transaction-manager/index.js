@@ -324,27 +324,27 @@ class TransactionManager {
             'database': 'SeriousMD'
         });
         
-        conn.connect(err => {
-            if (err) {
-                if (err.code === 'ECONNREFUSED') {
-                    const e = new DBError(DBError.UNABLE_TO_CONNECT, err);
-                    e.log();
-                    TransactionManager.isConnected = false;
-                    return;
-                }
-            };
+        // conn.connect(err => {
+        //     if (err) {
+        //         if (err.code === 'ECONNREFUSED') {
+        //             const e = new DBError(DBError.UNABLE_TO_CONNECT, err);
+        //             e.log();
+        //             TransactionManager.isConnected = false;
+        //             return;
+        //         }
+        //     };
 
-            TransactionManager.isConnected = true;
-            console.log('Transaction Manager connected to the database');
-        });
+        //     TransactionManager.isConnected = true;
+        //     console.log('Transaction Manager connected to the database');
+        // });
 
-        conn.on('error', (err) => {
-            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                const e = new DBError(DBError.UNABLE_TO_CONNECT, err);
-                TransactionManager.isConnected = false;
-                e.log();
-            }
-        });
+        // conn.on('error', (err) => {
+        //     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        //         const e = new DBError(DBError.UNABLE_TO_CONNECT, err);
+        //         TransactionManager.isConnected = false;
+        //         e.log();
+        //     }
+        // });
 
         return conn;
     }
