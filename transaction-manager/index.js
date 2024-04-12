@@ -315,7 +315,8 @@ class TransactionManager {
     }
 
     static initializeDbConnection() {
-        var conn = mysql.createConnection({
+        var conn = mysql.createPool({
+            'connectionLimit': 10,
             'host': process.env.DB_SERVER_HOST,
             'port': process.env.DB_SERVER_PORT,
             'user': process.env.DB_SERVER_USER,
