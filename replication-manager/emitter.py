@@ -35,7 +35,8 @@ def send_new_log_entries(socket: socket.socket, host, port, new_lines: list):
         socket.sendto(data.strip().encode('utf-8'), (host, port))
     
     # Wait for acknowledgement
-    data, addr = socket.recvfrom(1024)
+    msg, addr = socket.recvfrom(1024)
+    data = msg.decode('utf-8')
     print(f"Received data from {addr}: {data.decode('utf-8')}")
 
     if data.startswith('ACK'):
