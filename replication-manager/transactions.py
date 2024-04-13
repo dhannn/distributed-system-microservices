@@ -19,9 +19,9 @@ class Transactions:
     def end(self, lsn, status):
         def convert_to_query(operation, args):
             if operation == 'INSERT':
-                return f"INSERT INTO Appointments VALUES ({args[0]}, {', '.join(args) });"
+                return f"INSERT INTO Appointments VALUES ({id}, {', '.join(args) });"
             elif operation == 'MODIFY':
-                return f"UPDATE Appointments SET {args[1]} = {args[3]} WHERE id = {args[0]};"
+                return f"UPDATE Appointments SET {args[0]} = {args[1]} WHERE id = {id};"
             else:
                 raise 'Unsupported operation'
 
