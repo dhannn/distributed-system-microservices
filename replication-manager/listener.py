@@ -37,7 +37,7 @@ def listener():
             # data, addr = listener_socket.recvfrom(1024)
             # data = data.decode('utf-8')
             # print(f"Received another data from {addr}: {data}")
-            # ret = parser.parse(data)
+            ret = parser.parse(data)
 
             try:
                 print(ret)
