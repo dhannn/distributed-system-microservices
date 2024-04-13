@@ -17,11 +17,11 @@ class Transactions:
         self.transactions[lsn].append(db_operation)
 
     def end(self, lsn, status, *_):
-        def convert_to_query(operation, args):
+        def convert_to_query(operation, id, args):
             if operation == 'INSERT':
-                return f"INSERT INTO Appointments VALUES ({args[0]}, {', '.join(args[1:]) });"
+                return f"INSERT INTO Appointments VALUES ({id}, {', '.join(args) });"
             elif operation == 'MODIFY':
-                return f"UPDATE Appointments SET {args[1]} = {args[2]} WHERE id = {args[0]};"
+                return f"UPDATE Appointments SET {args[0]} = {args[1]} WHERE id = {id};"
             else:
                 raise 'Unsupported operation'
 
