@@ -42,8 +42,8 @@ def listener():
             try:
                 query = _dict[ret[1]](*ret)
                 if query is not None:
-                    conn.execute_query(query)
-                    listener_socket.sendto(f'ACK'.encode('utf-8'), addr)
+                    if conn.execute_query(query):
+                        listener_socket.sendto(f'ACK {query}'.encode('utf-8'), addr)
             except Exception as e:
                 print(f"Exception occurred: {e}")
                 listener_socket.sendto(f'NACK {e}'.encode('utf-8'), addr)
