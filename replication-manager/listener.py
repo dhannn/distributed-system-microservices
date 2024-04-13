@@ -40,7 +40,6 @@ def listener():
             ret = parser.parse(data)
 
             try:
-                print(ret)
                 query = _dict[ret[1]](*ret)
                 
                 if query is not None:
