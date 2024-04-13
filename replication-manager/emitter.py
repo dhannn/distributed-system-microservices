@@ -38,25 +38,23 @@ def send_new_log_entries(socket: socket.socket, host, port, new_lines: list):
     data, addr = socket.recvfrom(1024)
     print(f"Received data from {addr}: {data.decode('utf-8')}")
 
-    backoff_time = 60
-    max_tries = 5
-    tries = 0
+    if data.startswith('ACK'):
+        print(f"Replication successful\n")
+    elif data.startswith('NACK'):
 
-    while max_tries < tries:
-        if data.startswith('ACK'):
-            print(f"Replication successful\n")
-            break
-        elif data.startswith('NACK'):
+        backoff_time = 60
+        max_tries = 5
+        tries = 0
+
+        while max_tries < tries:
             print(f"Replication unsuccessful, giving up after {max_tries - tries} try")
             
             time.sleep(backoff_time)
             
             tries += 1
             backoff_time *= 2
-        else:
-            print("Unknown response:", data)
-
-    
+    else:
+        print("Unknown response:", data)
 
 
 def emitter(max_iterations=None):
