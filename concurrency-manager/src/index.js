@@ -116,9 +116,9 @@ class ConcurrentTransaction {
         ]
 
         for (const key in this.read_timestamps) {
-            promises.push(new Promise((resolve, reject) => {
+            for (const db in dbs) {
+                promises.push(new Promise((resolve, reject) => {
                 
-                for (const db in dbs) {
                     const previous_timestamp = this.read_timestamps[key][dbs[db].threadId];
 
                     this.queryVersion(dbs[db], key, (err, res) => {
@@ -130,8 +130,8 @@ class ConcurrentTransaction {
                         resolve(previous_timestamp === res);
                     });
                     
-                }
-            }));
+                }));
+            };
         };
 
         return new Promise((resolve, reject) => {
