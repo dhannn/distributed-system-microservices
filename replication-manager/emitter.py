@@ -18,9 +18,10 @@ def print_file(filename):
 def get_lines(filename):
     lines = []
     num_lines = 0
+    
     with open(filename, 'r') as f:
         lines = f.readlines()
-        num_lines = len(num_lines)
+        num_lines = len(lines)
     
     return lines, num_lines
 
