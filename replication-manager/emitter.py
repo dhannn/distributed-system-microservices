@@ -18,7 +18,7 @@ def print_file(filename):
 def get_lines(filename):
     lines = []
     num_lines = 0
-    
+
     with open(filename, 'r') as f:
         lines = f.readlines()
         num_lines = len(lines)
@@ -68,7 +68,7 @@ def emitter(max_iterations=None):
 
             for data in new_lines:
                 for sock, (host, port) in zip(sockets, nodes):
-                    sock.sendto(data.encode('utf-8'), (host, port))
+                    sock.sendto(data.strip().encode('utf-8'), (host, port))
 
             # ACK/NACK part
             backoff_time = 1
