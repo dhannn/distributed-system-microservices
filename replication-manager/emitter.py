@@ -30,9 +30,6 @@ def poll_last_modified(filename):
     last_modified = os.stat(filename).st_mtime_ns
     return last_modified
 
-def send():
-    pass
-
 def emitter(max_iterations=None):
     server_host_in = environ['SERVER_HOST_IN']
     host1 =  environ['SERVER_HOST_OUT'].split(';')[0]
@@ -67,44 +64,40 @@ def emitter(max_iterations=None):
             print(f"Detected change...")
             previous_last_modified = current_last_modified
             
-            # notify(filename_to_monitor, nodes, sockets, last_line)
-            threading.Thread(target=notify, args=[filename_to_monitor, nodes, sockets, last_line])
+            lines, _ = get_lines(filename_to_monitor)
+            new_lines = lines[last_line:]
+
+            for data in new_lines:
+                for sock, (host, port) in zip(sockets, nodes):
+                    sock.sendto(data.strip().encode('utf-8'), (host, port))
+
+            # ACK/NACK part
+            backoff_time = 1
+            max_backoff_time = 60
+
+            # Receive data from 2 clients
+            response_data = []
+            for _ in range(2):
+                data, addr = sock.recvfrom(1024)
+                response_data.append((data.decode('utf-8'), addr))
+                print(f"Received data from {addr}: {data.decode('utf-8')}")
+
+            for response, addr in response_data:
+                while response.startswith('NACK') and backoff_time <= max_backoff_time:
+                    print(f"Replication of {filename_to_monitor} unsuccessful, retrying in {backoff_time} seconds...")
+                    time.sleep(backoff_time)
+                    sock.sendto(data.encode('utf-8'), addr)
+                    response = sock.recvfrom(1024).decode('utf-8')
+                    backoff_time *= 2
+
+                if response.startswith('ACK'):
+                    print(f"Replication of {filename_to_monitor} successful\n")
+                elif response.startswith('NACK'):
+                    print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
+                else:
+                    print("Unknown response:", response)
         
         time.sleep(1)
         iteration += 1
-
-def notify(filename_to_monitor, nodes, sockets, last_line):
-    lines, _ = get_lines(filename_to_monitor)
-    new_lines = lines[last_line:]
-
-    for data in new_lines:
-        for sock, (host, port) in zip(sockets, nodes):
-            sock.sendto(data.strip().encode('utf-8'), (host, port))
-
-            # ACK/NACK part
-    backoff_time = 1
-    max_backoff_time = 60
-
-            # Receive data from 2 clients
-    response_data = []
-    for _ in range(2):
-        data, addr = sock.recvfrom(1024)
-        response_data.append((data.decode('utf-8'), addr))
-        print(f"Received data from {addr}: {data.decode('utf-8')}")
-
-    for response, addr in response_data:
-        while response.startswith('NACK') and backoff_time <= max_backoff_time:
-            print(f"Replication of {filename_to_monitor} unsuccessful, retrying in {backoff_time} seconds...")
-            time.sleep(backoff_time)
-            sock.sendto(data.encode('utf-8'), addr)
-            response = sock.recvfrom(1024).decode('utf-8')
-            backoff_time *= 2
-
-        if response.startswith('ACK'):
-            print(f"Replication of {filename_to_monitor} successful\n")
-        elif response.startswith('NACK'):
-            print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
-        else:
-            print("Unknown response:", response)
 
 emitter()
