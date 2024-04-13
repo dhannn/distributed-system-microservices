@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 process.env.LOG_DIRECTORY = "root/log_files/Transaction.log";
 const TransactionManager = require("../transaction-manager/index.js");
+const DBError = require("./error.js");
 const tm = new TransactionManager();
 
 const app = express();
@@ -70,18 +71,34 @@ app.get("/report", async (_, res) => {
   }
 });
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // milliseconds
+
 app.get("/appts/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const appointment = await tm.viewAppointment(id);
-    setTimeout(
-      () => res.json(appointment),
-      DELAY
-    )
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(error);
-  }
+  let retries = 0;
+
+  const handleConcurrentConflict = async () => {
+    try {
+      const id = req.params.id;
+      const appointment = await tm.viewAppointment(id);
+      setTimeout(
+        () => res.json(appointment),
+        DELAY
+      );
+    } catch (error) {
+      if (error.code === DBError.CONCURRENCY_CONFLICT && retries < MAX_RETRIES) {
+        // Retry after a delay
+        setTimeout(() => {
+          retries++;
+          handleConcurrentConflict();
+        }, RETRY_DELAY);
+      } else {
+        res.status(500).json(error);
+      }
+    }
+  };
+
+  handleConcurrentConflict();
 });
 
 app.put("/appts/:id", async (req, res) => {
