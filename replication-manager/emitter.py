@@ -111,9 +111,10 @@ def emitter(max_iterations=None):
             for thread in threads:
                 thread.join()
             
-            time.sleep(1)
         except KeyboardInterrupt:
             break
+        
+        time.sleep(1)
 
     # while max_iterations is None or iteration < max_iterations:
 
