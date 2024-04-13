@@ -25,7 +25,7 @@ class Transactions:
             if operation == 'INSERT':
                 return f"INSERT INTO Appointments VALUES ({id}, {', '.join(args) });"
             elif operation == 'MODIFY':
-                return f"UPDATE Appointments SET {args[1]} = {args[2]} WHERE id = {id};"
+                return f"UPDATE Appointments SET {args[0]} = {args[1]} WHERE id = {id};"
             else:
                 raise 'Unsupported operation'
 
