@@ -25,7 +25,7 @@ class TransactionLogger {
 
     addOperation(lsn, operation, primary_key, args) { 
         return new Promise((resolve, _) => {
-            let entryBody = `${operation} ${primary_key} ${' '.join(args)}`;
+            let entryBody = `${operation} ${primary_key} ${" ".join(args)}`;
             this.logEntry(lsn, entryBody, resolve);
         })
     }
