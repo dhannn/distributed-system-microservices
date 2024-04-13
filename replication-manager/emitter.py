@@ -110,6 +110,8 @@ def emitter(max_iterations=None):
 
             for thread in threads:
                 thread.join()
+            
+            time.sleep(1)
         except KeyboardInterrupt:
             break
 
