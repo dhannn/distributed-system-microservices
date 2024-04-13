@@ -64,7 +64,7 @@ def emitter(max_iterations=None):
             previous_last_modified = current_last_modified
             
             lines, _ = get_lines(filename_to_monitor)
-            new_lines = lines[last_line + 1:]
+            new_lines = lines[last_line:]
 
             for data in new_lines:
                 for sock, (host, port) in zip(sockets, nodes):
