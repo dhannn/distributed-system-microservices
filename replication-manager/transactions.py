@@ -13,7 +13,6 @@ class Transactions:
             'id': args[0],
             'args': args[1:]
         }
-        print(db_operation)
 
         self.transactions[lsn].append(db_operation)
 
@@ -64,6 +63,7 @@ class Connection:
     
     def execute_query(self, query):
         is_success = True
+        print(query)
         
         try:
             cursor = self.db_connection.cursor()
