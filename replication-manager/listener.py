@@ -40,14 +40,14 @@ def listener():
             ret = parser.parse(data)
 
             try:
+                print(ret)
                 query = _dict[ret[1]](*ret)
-                print(query)
+                
                 if query is not None:
                     if conn.execute_query(query):
                         listener_socket.sendto(f'ACK {query}'.encode('utf-8'), addr)
             except Exception as e:
                 print(f"Exception occurred: {e}")
-                print(e)
                 listener_socket.sendto(f'NACK {e}'.encode('utf-8'), addr)
 
             # listener_socket.close()  # Move this outside the while loop
