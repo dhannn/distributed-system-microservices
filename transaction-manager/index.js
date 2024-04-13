@@ -304,6 +304,7 @@ class TransactionManager {
                     });
 
                 } else {
+                    db_connection.rollback();
                     reject(new DBError(DBError.CONCURRENCY_CONFLICT));
                 }
 

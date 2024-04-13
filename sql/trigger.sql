@@ -1,4 +1,5 @@
 -- DROP TRIGGER increment_version;
+USE SeriousMD;
 
 DELIMITER $$
 CREATE TRIGGER increment_version BEFORE UPDATE ON Appointments
