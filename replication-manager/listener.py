@@ -34,10 +34,10 @@ def listener():
             data = data.decode('utf-8')
             print(f"Received data from {addr}: {data}")
 
-            data, addr = listener_socket.recvfrom(1024)
-            data = data.decode('utf-8')
-            print(f"Received another data from {addr}: {data}")
-            ret = parser.parse(data)
+            # data, addr = listener_socket.recvfrom(1024)
+            # data = data.decode('utf-8')
+            # print(f"Received another data from {addr}: {data}")
+            # ret = parser.parse(data)
 
             try:
                 print(ret)
