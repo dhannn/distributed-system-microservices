@@ -1,5 +1,6 @@
 import mysql.connector
 import os
+import shlex
 
 class Transactions:
     transactions = {}
@@ -40,7 +41,7 @@ class Transactions:
 class LogParser:
     @staticmethod
     def parse(log):
-        lsn, operation, *args = log.split(' ')
+        lsn, operation, *args = shlex.split(log, posix=False)
 
         return lsn, operation, args
 
@@ -63,7 +64,6 @@ class Connection:
     
     def execute_query(self, query):
         is_success = True
-        print(query)
         
         try:
             cursor = self.db_connection.cursor()
