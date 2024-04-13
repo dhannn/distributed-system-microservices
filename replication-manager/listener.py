@@ -41,6 +41,7 @@ def listener():
 
             try:
                 query = _dict[ret[1]](*ret)
+                print(query)
                 if query is not None:
                     if conn.execute_query(query):
                         listener_socket.sendto(f'ACK {query}'.encode('utf-8'), addr)
