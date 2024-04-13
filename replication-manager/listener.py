@@ -47,6 +47,7 @@ def listener():
                         listener_socket.sendto(f'ACK {query}'.encode('utf-8'), addr)
             except Exception as e:
                 print(f"Exception occurred: {e}")
+                print(e)
                 listener_socket.sendto(f'NACK {e}'.encode('utf-8'), addr)
 
             # listener_socket.close()  # Move this outside the while loop

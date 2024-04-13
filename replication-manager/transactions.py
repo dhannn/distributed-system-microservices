@@ -13,7 +13,6 @@ class Transactions:
             'id': args[0],
             'args': args[1:]
         }
-        print('FGSHJKA')
         print(db_operation)
 
         self.transactions[lsn].append(db_operation)
