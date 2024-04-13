@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, "/")));
 app.use("/", express.static(path.join(__dirname, "pages")));
 app.use(express.json());
-
+DELAY = 2000
 app.get("/", (req, res) => {
   try {
     res.sendFile(path.join(__dirname, "/index.html"));
@@ -47,7 +47,10 @@ app.post("/appts", async (req, res) => {
   try {
     const region = req.body.region;
     const appointment = await tm.addAppointment(region);
-    res.status(201).json(appointment);
+    setTimeout(
+      () => res.status(201).json(appointment),
+      DELAY
+    )
   } catch (error) {
     console.error(error);
     res.status(500).json(error);
@@ -57,7 +60,10 @@ app.post("/appts", async (req, res) => {
 app.get("/report", async (_, res) => {
   try {
     const report = await tm.generateReport();
-    res.json(report);
+    setTimeout(
+      () => res.json(report),
+      DELAY
+    )
   } catch (error) {
     console.error(error);
     res.status(500).json(error);
@@ -68,7 +74,10 @@ app.get("/appts/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const appointment = await tm.viewAppointment(id);
-    res.json(appointment);
+    setTimeout(
+      () => res.json(appointment),
+      DELAY
+    )
   } catch (error) {
     console.error(error);
     res.status(500).json(error);
@@ -80,7 +89,10 @@ app.put("/appts/:id", async (req, res) => {
     const id = req.params.id;
     const newStatus = req.body.status;
     await tm.modifyStatus(id, newStatus);
-    res.json({ message: "Appointment status updated successfully." });
+    setTimeout(
+      () => res.json({ message: "Appointment status updated successfully." }),
+      DELAY
+    )
   } catch (error) {
     console.error(error);
     res.status(500).json(error);
