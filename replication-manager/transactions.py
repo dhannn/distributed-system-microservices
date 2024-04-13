@@ -4,7 +4,7 @@ import os
 class Transactions:
     transactions = {}
 
-    def start(self, lsn):
+    def start(self, lsn, *_):
         self.transactions[lsn] = []
 
     def add_operation(self, lsn, operation, args):
