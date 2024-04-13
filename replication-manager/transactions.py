@@ -16,7 +16,7 @@ class Transactions:
 
         self.transactions[lsn].append(db_operation)
 
-    def end(self, lsn, status, *_):
+    def end(self, lsn, status):
         def convert_to_query(operation, args):
             if operation == 'INSERT':
                 return f"INSERT INTO Appointments VALUES ({id}, {', '.join(args) });"
@@ -27,7 +27,7 @@ class Transactions:
 
         if status == 'COMMIT':
 
-            operations = self.transactions[lsn]
+            operations = self.transactions[lsn]['operation']
             query = ''            
             
             for operation in operations:
