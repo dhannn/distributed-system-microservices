@@ -20,6 +20,10 @@ class Transactions:
     def end(self, lsn, status, *_):
 
         def convert_to_query(operation, id, args):
+            print(operation)
+            print(id)
+            print(args)
+
             if operation == 'INSERT':
                 return f"INSERT INTO Appointments VALUES ({id}, {', '.join(args) });"
             elif operation == 'MODIFY':
@@ -35,7 +39,6 @@ class Transactions:
             
             for operation in operations:
                 query += convert_to_query(**operation)
-                print(query)
             
             return query
 
