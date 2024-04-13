@@ -35,6 +35,7 @@ class Transactions:
             
             for operation in operations:
                 query += convert_to_query(**operation)
+                print(query)
             
             return query
 
