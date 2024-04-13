@@ -17,7 +17,6 @@ class Transactions:
         self.transactions[lsn].append(db_operation)
 
     def end(self, lsn, status, *_):
-        print('end()' + lsn + ' ' + status)
 
         def convert_to_query(operation, id, args):
             if operation == 'INSERT':
@@ -30,7 +29,8 @@ class Transactions:
         if status == 'COMMIT':
 
             operations = self.transactions[lsn]
-            query = ''            
+            query = ''
+            print(operations)
             
             for operation in operations:
                 query += convert_to_query(**operation)
