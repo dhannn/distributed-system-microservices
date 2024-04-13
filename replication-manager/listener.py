@@ -38,6 +38,8 @@ def listener():
             # data = data.decode('utf-8')
             # print(f"Received another data from {addr}: {data}")
             ret = parser.parse(data)
+            print('RET')
+            print(ret)
 
             try:
                 query = _dict[ret[1]](*ret)
