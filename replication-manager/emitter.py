@@ -30,6 +30,35 @@ def poll_last_modified(filename):
     last_modified = os.stat(filename).st_mtime_ns
     return last_modified
 
+def send_new_log_entries(socket: socket.socket, host, port, new_lines: list):            
+    for data in new_lines:
+        socket.sendto(data.strip().encode('utf-8'), (host, port))
+    
+    # Wait for acknowledgement
+    data, addr = socket.recvfrom(1024)
+    print(f"Received data from {addr}: {data.decode('utf-8')}")
+
+    backoff_time = 60
+    max_tries = 5
+    tries = 0
+
+    while max_tries < tries:
+        if data.startswith('ACK'):
+            print(f"Replication successful\n")
+            break
+        elif data.startswith('NACK'):
+            print(f"Replication unsuccessful, giving up after {max_tries - tries} try")
+            
+            time.sleep(backoff_time)
+            
+            tries += 1
+            backoff_time *= 2
+        else:
+            print("Unknown response:", data)
+
+    
+
+
 def emitter(max_iterations=None):
     server_host_in = environ['SERVER_HOST_IN']
     host1 =  environ['SERVER_HOST_OUT'].split(';')[0]
@@ -53,50 +82,69 @@ def emitter(max_iterations=None):
     _, last_line = get_lines(filename_to_monitor)
 
     # monitor file changes and replicate file data to the last node
-    iteration = 0
-    while max_iterations is None or iteration < max_iterations:
-        print(f"Monitoring {filename_to_monitor} for changes...")
-        print(f"Last known hash: {previous_last_modified}")
-        current_last_modified = poll_last_modified(filename_to_monitor)
-        print(f"Current hash: {current_last_modified}")
+    while True:
 
-        if current_last_modified != previous_last_modified:
-            print(f"Detected change...")
-            previous_last_modified = current_last_modified
+        try: 
             
-            lines, _ = get_lines(filename_to_monitor)
-            new_lines = lines[last_line:]
+            print(f"Monitoring {filename_to_monitor} for changes...")
+            print(f"Last known hash: {previous_last_modified}")
+            current_last_modified = poll_last_modified(filename_to_monitor)
+            print(f"Current hash: {current_last_modified}")
 
-            for data in new_lines:
+            threads:list[threading.Thread] = []
+            if current_last_modified != previous_last_modified:
+                print(f"Detected change...")
+                previous_last_modified = current_last_modified
+                
+                lines, _ = get_lines(filename_to_monitor)
+                new_lines = lines[last_line:]
+                
+
                 for sock, (host, port) in zip(sockets, nodes):
-                    sock.sendto(data.strip().encode('utf-8'), (host, port))
+                    thread = threading.Thread(
+                        target=send_new_log_entries, args=[sock, host, port, new_lines])
+                    threads.append(thread)
 
-                    # ACK/NACK part
-                    backoff_time = 1
-                    max_backoff_time = 60
+                for thread in threads:
+                    thread.start()
 
-                    # Receive data from 2 clients
-                    response_data = []
-                    data, addr = sock.recvfrom(1024)
-                    response_data.append((data.decode('utf-8'), addr))
-                    print(f"Received data from {addr}: {data.decode('utf-8')}")
+            for thread in threads:
+                thread.join()
+        except KeyboardInterrupt:
+            break
 
-                    for response, addr in response_data:
-                        while response.startswith('NACK') and backoff_time <= max_backoff_time:
-                            print(f"Replication of {filename_to_monitor} unsuccessful, retrying in {backoff_time} seconds...")
-                            time.sleep(backoff_time)
-                            sock.sendto(data.encode('utf-8'), addr)
-                            response = sock.recvfrom(1024).decode('utf-8')
-                            backoff_time *= 2
+    # while max_iterations is None or iteration < max_iterations:
 
-                        if response.startswith('ACK'):
-                            print(f"Replication of {filename_to_monitor} successful\n")
-                        elif response.startswith('NACK'):
-                            print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
-                        else:
-                            print("Unknown response:", response)
+    #         for data in new_lines:
+    #             for sock, (host, port) in zip(sockets, nodes):
+    #                 sock.sendto(data.strip().encode('utf-8'), (host, port))
+
+    #                 # ACK/NACK part
+    #                 backoff_time = 1
+    #                 max_backoff_time = 60
+
+    #                 # Receive data from 2 clients
+    #                 response_data = []
+    #                 data, addr = sock.recvfrom(1024)
+    #                 response_data.append((data.decode('utf-8'), addr))
+    #                 print(f"Received data from {addr}: {data.decode('utf-8')}")
+
+    #                 for response, addr in response_data:
+    #                     while response.startswith('NACK') and backoff_time <= max_backoff_time:
+    #                         print(f"Replication of {filename_to_monitor} unsuccessful, retrying in {backoff_time} seconds...")
+    #                         time.sleep(backoff_time)
+    #                         sock.sendto(data.encode('utf-8'), addr)
+    #                         response = sock.recvfrom(1024).decode('utf-8')
+    #                         backoff_time *= 2
+
+    #                     if response.startswith('ACK'):
+    #                         print(f"Replication of {filename_to_monitor} successful\n")
+    #                     elif response.startswith('NACK'):
+    #                         print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
+    #                     else:
+    #                         print("Unknown response:", response)
         
-        time.sleep(1)
-        iteration += 1
+    #     time.sleep(1)
+    #     iteration += 1
 
 emitter()
