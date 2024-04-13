@@ -68,7 +68,7 @@ def emitter(max_iterations=None):
             previous_last_modified = current_last_modified
             
             # notify(filename_to_monitor, nodes, sockets, last_line)
-            threading.Thread(target=notify, arg=[filename_to_monitor, nodes, sockets, last_line])
+            threading.Thread(target=notify, args=[filename_to_monitor, nodes, sockets, last_line])
         
         time.sleep(1)
         iteration += 1
