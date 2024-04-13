@@ -71,31 +71,31 @@ def emitter(max_iterations=None):
                 for sock, (host, port) in zip(sockets, nodes):
                     sock.sendto(data.strip().encode('utf-8'), (host, port))
 
-            # ACK/NACK part
-            backoff_time = 1
-            max_backoff_time = 60
+                # ACK/NACK part
+                backoff_time = 1
+                max_backoff_time = 60
 
-            # Receive data from 2 clients
-            response_data = []
-            for _ in range(2):
-                data, addr = sock.recvfrom(1024)
-                response_data.append((data.decode('utf-8'), addr))
-                print(f"Received data from {addr}: {data.decode('utf-8')}")
+                # Receive data from 2 clients
+                response_data = []
+                for _ in range(2):
+                    data, addr = sock.recvfrom(1024)
+                    response_data.append((data.decode('utf-8'), addr))
+                    print(f"Received data from {addr}: {data.decode('utf-8')}")
 
-            for response, addr in response_data:
-                while response.startswith('NACK') and backoff_time <= max_backoff_time:
-                    print(f"Replication of {filename_to_monitor} unsuccessful, retrying in {backoff_time} seconds...")
-                    time.sleep(backoff_time)
-                    sock.sendto(data.encode('utf-8'), addr)
-                    response = sock.recvfrom(1024).decode('utf-8')
-                    backoff_time *= 2
+                for response, addr in response_data:
+                    while response.startswith('NACK') and backoff_time <= max_backoff_time:
+                        print(f"Replication of {filename_to_monitor} unsuccessful, retrying in {backoff_time} seconds...")
+                        time.sleep(backoff_time)
+                        sock.sendto(data.encode('utf-8'), addr)
+                        response = sock.recvfrom(1024).decode('utf-8')
+                        backoff_time *= 2
 
-                if response.startswith('ACK'):
-                    print(f"Replication of {filename_to_monitor} successful\n")
-                elif response.startswith('NACK'):
-                    print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
-                else:
-                    print("Unknown response:", response)
+                    if response.startswith('ACK'):
+                        print(f"Replication of {filename_to_monitor} successful\n")
+                    elif response.startswith('NACK'):
+                        print(f"Replication of {filename_to_monitor} unsuccessful, giving up after {backoff_time//2} seconds")
+                    else:
+                        print("Unknown response:", response)
         
         time.sleep(1)
         iteration += 1
