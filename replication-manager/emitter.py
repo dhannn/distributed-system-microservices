@@ -37,7 +37,7 @@ def send_new_log_entries(socket: socket.socket, host, port, new_lines: list):
     # Wait for acknowledgement
     msg, addr = socket.recvfrom(1024)
     data = msg.decode('utf-8')
-    print(f"Received data from {addr}: {data.decode('utf-8')}")
+    print(f"Received data from {addr}: {data}")
 
     if data.startswith('ACK'):
         print(f"Replication successful\n")
