@@ -17,6 +17,8 @@ class Transactions:
         self.transactions[lsn].append(db_operation)
 
     def end(self, lsn, status, *_):
+        print('end()' + lsn + ' ' + status)
+
         def convert_to_query(operation, id, args):
             if operation == 'INSERT':
                 return f"INSERT INTO Appointments VALUES ({id}, {', '.join(args) });"
@@ -33,7 +35,6 @@ class Transactions:
             for operation in operations:
                 query += convert_to_query(**operation)
             
-            print(query)
             return query
 
 class LogParser:
