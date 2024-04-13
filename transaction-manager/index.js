@@ -287,7 +287,7 @@ class TransactionManager {
 
                 if (res) {
                         
-                    logger.addOperation(lsn, 'MODIFY', id, ['status', status])
+                    logger.addOperation(lsn, 'MODIFY', id, ['status', "'status'"])
                         .then(() => {
                             logger.end(lsn, 'COMMIT');
                         });
