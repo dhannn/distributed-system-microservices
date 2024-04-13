@@ -215,7 +215,7 @@ class TransactionManager {
 
                         const args = parseArgs(info[0]);
 
-                        logger.addOperation(lsn, 'INSERT', info[0].id, args)
+                        logger.addOperation(lsn, 'INSERT', info[0].id, [args])
                             .then(() => {
                                 logger.end(lsn, 'COMMIT');
                                 resolve(info);
